@@ -2,12 +2,12 @@
   var form = document.getElementById('mockupForm');
   var steps = Array.prototype.slice.call(form.querySelectorAll('.step'));
   var nextBtn = document.getElementById('nextBtn');
+  var nextLabel = document.getElementById('nextLabel');
   var backBtn = document.getElementById('backBtn');
-  var label = document.getElementById('stepLabel');
-  var stairs = document.querySelectorAll('.stairs span');
+  var side = Array.prototype.slice.call(document.querySelectorAll('#sideSteps li'));
+  var prog = document.getElementById('prog');
   var errBox = document.getElementById('formError');
-  var labels = ['YOUR BUSINESS', 'YOUR GOAL', 'YOUR PLAN', 'YOUR DETAILS', 'DONE'];
-  var radioNames = ['business_type', 'goal', 'plan'];
+  var radioNames = ['business_type', 'goal'];
   var current = 0;
 
   function value(name) {
@@ -15,44 +15,55 @@
     return el ? el.value : '';
   }
 
-  function setStairs(i) {
-    for (var s = 0; s < stairs.length; s++) stairs[s].classList.toggle('on', s <= i);
-    label.textContent = 'STEP ' + (i + 1) + ' / 5 · ' + labels[i];
+  function setSide(i) {
+    side.forEach(function (li, k) {
+      li.classList.toggle('on', k === i);
+      li.classList.toggle('done', k < i);
+      if (k === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    prog.style.width = ((i + 1) / 4 * 100) + '%';
   }
 
   function render() {
-    steps.forEach(function (st, i) { st.classList.toggle('active', i === current); });
+    steps.forEach(function (st, i) {
+      var on = i === current;
+      st.classList.toggle('active', on);
+      if (on) Array.prototype.forEach.call(st.querySelectorAll('.opt'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
+    });
     backBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
-    nextBtn.textContent = current === 3 ? 'Request my free mockup' : 'Continue';
-    nextBtn.disabled = current < 3 && !value(radioNames[current]);
-    setStairs(current);
+    nextLabel.textContent = current === 2 ? 'Request my free mockup' : 'Continue';
+    nextBtn.disabled = current < 2 && !value(radioNames[current]);
+    setSide(current);
     errBox.textContent = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  form.addEventListener('change', function () {
-    if (current < 3) nextBtn.disabled = !value(radioNames[current]);
+  form.addEventListener('change', function (e) {
+    if (current < 2) {
+      nextBtn.disabled = !value(radioNames[current]);
+      if (e.target.type === 'radio' && e.target.name === radioNames[current]) {
+        setTimeout(function () { if (!nextBtn.disabled && current < 2) { current++; render(); } }, 380);
+      }
+    }
   });
   form.addEventListener('input', function () { errBox.textContent = ''; });
 
-  backBtn.addEventListener('click', function () {
-    if (current > 0) { current--; render(); }
-  });
+  backBtn.addEventListener('click', function () { if (current > 0) { current--; render(); } });
 
   nextBtn.addEventListener('click', function () {
-    if (current < 3) {
+    if (current < 2) {
       if (!value(radioNames[current])) return;
-      current++; render();
-      return;
+      current++; render(); return;
     }
-    var missing = Array.prototype.slice.call(steps[3].querySelectorAll('input[required]'))
+    var missing = Array.prototype.slice.call(steps[2].querySelectorAll('input[required]'))
       .filter(function (el) { return !el.value.trim() || !el.checkValidity(); });
     if (missing.length) {
-      errBox.textContent = 'Please fill in your business name, name, mobile number and a valid email.';
+      errBox.textContent = 'Please add your business name, your name, a mobile number and a valid email.';
       missing[0].focus();
       return;
     }
     nextBtn.disabled = true;
-    nextBtn.textContent = 'Sending…';
+    nextLabel.textContent = 'Sending…';
     fetch('/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -62,20 +73,21 @@
       showDone();
     }).catch(function () {
       nextBtn.disabled = false;
-      nextBtn.textContent = 'Request my free mockup';
+      nextLabel.textContent = 'Request my free mockup';
       errBox.textContent = 'Something went wrong sending your request. Please try again.';
     });
   });
 
   function showDone() {
     form.classList.add('hidden');
-    var done = document.getElementById('doneStep');
-    var biz = (value('business_type') || 'your business').toLowerCase();
+    var biz = value('business_type');
     var goal = (value('goal') || 'customers').toLowerCase();
+    var who = biz && biz !== 'Something else' ? 'your ' + biz.toLowerCase() : 'your business';
     document.getElementById('summary').textContent =
-      'We’ll design a homepage for your ' + biz + ' built to bring in more ' + goal + '. Here’s what happens next.';
-    done.classList.add('active');
-    setStairs(4);
+      'We’ll design a homepage for ' + who + ', built to bring in more ' + goal + '. Here’s what happens next.';
+    document.getElementById('doneStep').classList.add('active');
+    setSide(3);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   render();
