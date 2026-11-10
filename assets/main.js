@@ -426,12 +426,21 @@
   var years = $('#years');
   function cmp() {
     var y = +years.value;
-    var a = 6500 + 100 * 12 * y, s = 199 * 12 * y, max = 6500 + 100 * 12 * 5;
+    var h = +$('#hrs').value, rate = 89;
+    var a = 6500 + (100 + h * rate) * 12 * y, s = 199 * 12 * y, max = 6500 + (100 + 6 * rate) * 12 * 5;
     $('#yearsOut').textContent = y + (y === 1 ? ' year' : ' years');
+    $('#hrsOut').textContent = h + (h === 1 ? ' hr/month' : ' hrs/month');
     $('#vAgency').textContent = money(a); $('#vStoop').textContent = money(s);
-    $('#bAgency').style.width = (a / max * 100) + '%'; $('#bStoop').style.width = (s / max * 100) + '%';
+    $('#bAgency').style.width = (a / max * 100) + '%'; $('#bStoop').style.width = Math.max(s / max * 100, 2) + '%';
+    var d = a - s;
+    $('#vSave').textContent = money(Math.abs(d));
+    $('#save').classList.toggle('neg', d < 0);
+    $('#save').firstElementChild.textContent = d >= 0 ? 'You keep' : 'Agency is cheaper by';
+    $('#saveNote').textContent = d >= 0 ? 'with STOOP over ' + $('#yearsOut').textContent + ', plus a dashboard and tools' : 'at this setting';
   }
-  years.addEventListener('input', cmp); cmp();
+  years.addEventListener('input', cmp); $('#hrs').addEventListener('input', cmp); cmp();
+  var bf = $('#buyFaq');
+  if (bf) bf.addEventListener('click', function () { var i = $$('.faq-q').findIndex(function (q) { return /buy out/i.test(q.textContent); }); if (i > -1) setTimeout(function () { $$('.faq-q')[i].click(); }, 400); });
 
   /* faq */
   var qs = $$('.faq-q'), fill = $('#faqFill');
