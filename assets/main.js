@@ -108,14 +108,18 @@
       replaces: ['monthly store-builder plans', 'selling only through marketplaces', 'Venmo requests and invoices by hand'],
       apps: ['Shopify', 'Square Online', 'Etsy', 'WooCommerce'],
       demo: function (sb) {
-        var P = [['Juniper & Sage', 18, '#C9D6C2'], ['Desert Rain', 22, '#E8B79A'], ['Canyon Ember', 24, '#D98466'], ['Prickly Pear', 18, '#E7A6BF']];
+        var FL = '<path d="M12 2.5c1.4 1.9 1.4 3.3 0 4.3-1.4-1-1.4-2.4 0-4.3z"/>';
+        var P = [['Juniper & Sage', 18, 'Pillar candle', FL + '<path d="M12 7v2"/><rect x="8" y="9" width="8" height="12.5" rx="1.5"/>'],
+          ['Desert Rain', 22, '8 oz jar', FL + '<path d="M12 7v2.5"/><path d="M6.5 11h11v8.5a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2z"/><path d="M7.5 11V9.5h9V11"/>'],
+          ['Canyon Ember', 24, 'Travel tin', FL + '<path d="M12 7v3"/><ellipse cx="12" cy="13" rx="7.5" ry="2.2"/><path d="M4.5 13v4.5c0 1.2 3.4 2.2 7.5 2.2s7.5-1 7.5-2.2V13"/>'],
+          ['Prickly Pear', 18, 'Votive trio', '<path d="M5.5 8.5c.9 1.2.9 2 0 2.6-.9-.6-.9-1.4 0-2.6zM12 5.5c.9 1.2.9 2 0 2.6-.9-.6-.9-1.4 0-2.6zM18.5 8.5c.9 1.2.9 2 0 2.6-.9-.6-.9-1.4 0-2.6z"/><rect x="3" y="12.5" width="5" height="8.5" rx="1"/><rect x="9.5" y="9.5" width="5" height="11.5" rx="1"/><rect x="16" y="12.5" width="5" height="8.5" rx="1"/>']];
         var cart = {};
         function count() { var n = 0; for (var k in cart) n += cart[k]; return n; }
         function total() { var t = 0; for (var k in cart) t += cart[k] * P[k][1]; return t; }
         function shop() {
           var n = count();
           sb.innerHTML = '<div class="view"><div class="bk-head"><h5>Hand-poured in Arizona</h5><button class="sbtn ghost" id="sCart" style="height:36px;padding:0 12px">🛒 Cart · ' + n + '</button></div>' +
-            '<div class="prods">' + P.map(function (p, i) { return '<div class="prod"><div class="pimg" style="background:' + p[2] + '"></div><b>' + p[0] + '</b><span class="hint">8 oz soy candle · $' + p[1] + '</span><button class="sbtn" data-p="' + i + '" style="height:34px;font-size:13px">' + (cart[i] ? 'Added ×' + cart[i] : 'Add to cart') + '</button></div>'; }).join('') + '</div>' +
+            '<div class="prods">' + P.map(function (p, i) { return '<div class="prod"><div class="pimg"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p[3] + '</svg></div><b>' + p[0] + '</b><span class="hint">' + p[2] + ' · $' + p[1] + '</span><button class="sbtn" data-p="' + i + '" style="height:34px;font-size:13px">' + (cart[i] ? 'Added ×' + cart[i] : 'Add to cart') + '</button></div>'; }).join('') + '</div>' +
             '<button class="sbtn" id="sCheck"' + (n ? '' : ' disabled') + '>Check out' + (n ? ' · $' + total() : '') + ' ' + ARW + '</button></div>';
         }
         function checkout() {
