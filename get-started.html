@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get your free mockup | STOOP Design Co.</title>
+<meta name="description" content="Tell us about your business in two minutes and we'll design your homepage for free.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="/assets/styles.css">
+<style>
+body{font-family:'Inter',sans-serif;color:var(--ink)}
+.ob{min-height:100vh;display:flex;flex-wrap:wrap}
+.ob-side{flex:1 1 360px;max-width:460px;position:relative;overflow:hidden;background:var(--ink);color:#fff;padding:40px;display:flex;flex-direction:column;justify-content:space-between;gap:40px}
+.ob-main{flex:999 1 560px;min-width:0;padding:56px clamp(24px,6vw,96px);display:flex;flex-direction:column;justify-content:center}
+.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+.step{display:none;flex-direction:column;gap:28px;max-width:760px;border:0;margin:0;padding:0;animation:obIn .45s cubic-bezier(.2,.8,.2,1) both}
+.step.active{display:flex}
+.step legend{padding:0;display:flex;flex-direction:column;gap:10px}
+.step h2{margin:0;font-family:'Space Grotesk',sans-serif;font-size:clamp(30px,4vw,40px);letter-spacing:-1px;line-height:1.1}
+.sub{margin:0;font-size:16px;color:#57504A}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.opt{position:relative;display:flex;flex-direction:column;gap:6px;min-height:64px;padding:16px 18px;border-radius:14px;border:1.5px solid #E2DBD3;background:#fff;cursor:pointer;font-weight:600}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt small{font-weight:400;font-size:14px;color:#57504A}
+.opt .price{font-size:15px;color:var(--deep)}
+.opt:has(input:checked){border:2px solid var(--orange);background:#FFF6F1}
+.opt:has(input:focus-visible){outline:3px solid var(--deep);outline-offset:2px}
+label.field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:600}
+label.field input{height:52px;padding:0 14px;border-radius:12px;border:1.5px solid #E2DBD3;font:inherit;font-weight:400;font-size:16px}
+label.field input:focus{outline:none;border-color:var(--orange)}
+.err{margin:0;font-size:14px;color:#A2330A;min-height:20px}
+.nav{margin-top:40px;max-width:760px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btn{height:52px;padding:0 24px;border-radius:12px;font:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.btn-ghost{border:1.5px solid #E2DBD3;background:#fff;color:var(--ink)}
+.btn-primary{border:0;background:var(--deep);color:#fff}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.stairs{display:flex;align-items:flex-end;gap:8px;height:96px}
+.stairs span{width:48px;border-radius:8px;background:#2A2520;transition:background .3s}
+.stairs span.on{background:var(--orange)}
+.next-list{margin:0;padding:0;list-style:none}
+.next-list li{display:flex;gap:16px;padding:16px 0;border-top:1px solid #F0EBE5}
+.next-list li:last-child{border-bottom:1px solid #F0EBE5}
+.hidden{display:none}
+@keyframes obIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.step{animation:none}}
+</style>
+</head>
+<body>
+<div class="ob">
+<aside class="ob-side">
+<svg style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true"><g fill="none" stroke="#2A2520" stroke-width="2"><path d="M0 180 H120 V320 H260"/><path d="M460 120 H330 V260"/><path d="M0 620 H90 V520 H220"/><path d="M460 700 H360 V560"/></g><g fill="none" stroke="#E8501A" stroke-width="2" opacity=".55"><path class="flow" d="M0 180 H120 V320 H260"/><path class="flow" d="M460 700 H360 V560" style="animation-delay:-1s"/></g></svg>
+<a href="/" aria-label="Back to STOOP Design Co. home" style="position:relative;display:flex;align-items:center;gap:12px;color:#fff">
+<span style="width:40px;height:40px;border-radius:10px;background:var(--orange);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 60 60" aria-hidden="true"><path d="M0 57.5 L0 46.5 Q0 44 2.5 44 L17.5 44 Q20 44 20 41.5 L20 26.5 Q20 24 22.5 24 L37.5 24 Q40 24 40 21.5 L40 6.5 Q40 4 42.5 4 L57.5 4 Q60 4 60 6.5 L60 57.5 Q60 60 57.5 60 L2.5 60 Q0 60 0 57.5 Z" fill="#fff"/></svg></span>
+<span style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;line-height:.85">STOOP</span><span style="font-size:7px;font-weight:500;letter-spacing:.5em;padding-left:2px;color:#C9C0B6">DESIGN CO.</span></span>
+</a>
+<div style="position:relative;display:flex;flex-direction:column;gap:20px">
+<span class="mono" id="stepLabel" style="font-size:12px;color:#C9C0B6">STEP 1 / 5 · YOUR BUSINESS</span>
+<div class="stairs" aria-hidden="true"><span style="height:24px" class="on"></span><span style="height:40px"></span><span style="height:56px"></span><span style="height:72px"></span><span style="height:96px"></span></div>
+<h1 style="margin:0;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:40px;line-height:1.05;letter-spacing:-1px">Your free mockup starts here.</h1>
+<p style="margin:0;font-size:16px;line-height:1.6;color:#C9C0B6">Two minutes, five steps. We design your homepage before you pay a thing.</p>
+</div>
+<div style="position:relative;display:flex;flex-direction:column;gap:10px;font-size:14px;color:#C9C0B6">
+<span>✓ No card needed for the mockup</span>
+<span>✓ A real person reviews every request</span>
+</div>
+</aside>
+
+<main class="ob-main">
+<form id="mockupForm" name="free-mockup" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+<input type="hidden" name="form-name" value="free-mockup">
+<input type="hidden" name="subject" value="New free mockup request">
+<p class="hidden"><label>Don't fill this out: <input name="bot-field"></label></p>
+
+<fieldset class="step active" data-step="0">
+<legend><span class="mono" style="color:var(--deep)">// STEP 1 OF 5</span><h2>What kind of business do you run?</h2></legend>
+<div class="grid">
+<label class="opt"><input type="radio" name="business_type" value="Guide or tour">Guide or tour</label>
+<label class="opt"><input type="radio" name="business_type" value="Cleaning service">Cleaning service</label>
+<label class="opt"><input type="radio" name="business_type" value="Salon or wellness">Salon or wellness</label>
+<label class="opt"><input type="radio" name="business_type" value="Restaurant or café">Restaurant or café</label>
+<label class="opt"><input type="radio" name="business_type" value="Trades and home services">Trades and home services</label>
+<label class="opt"><input type="radio" name="business_type" value="Lodging">Lodging</label>
+<label class="opt"><input type="radio" name="business_type" value="Shop or gallery">Shop or gallery</label>
+<label class="opt"><input type="radio" name="business_type" value="Something else">Something else</label>
+</div>
+</fieldset>
+
+<fieldset class="step" data-step="1">
+<legend><span class="mono" style="color:var(--deep)">// STEP 2 OF 5</span><h2>What do you want more of?</h2><p class="sub">We'll build your homepage around it.</p></legend>
+<div class="grid">
+<label class="opt"><input type="radio" name="goal" value="Phone calls">Phone calls<small>Tap-to-call front and center</small></label>
+<label class="opt"><input type="radio" name="goal" value="Bookings">Bookings<small>Your own booking built in</small></label>
+<label class="opt"><input type="radio" name="goal" value="Quote requests">Quote requests<small>Instant estimate widget</small></label>
+<label class="opt"><input type="radio" name="goal" value="Foot traffic">Foot traffic<small>Maps, hours and reviews up top</small></label>
+</div>
+</fieldset>
+
+<fieldset class="step" data-step="2">
+<legend><span class="mono" style="color:var(--deep)">// STEP 3 OF 5</span><h2>Which plan sounds right?</h2><p class="sub">Not sure is a fine answer. We'll recommend one with your mockup.</p></legend>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+<label class="opt"><input type="radio" name="plan" value="Launch">Launch<span class="price">$750 one-time</span><small>Up to 3 pages, yours to keep</small></label>
+<label class="opt"><input type="radio" name="plan" value="Essentials">Essentials<span class="price">$199/month</span><small>Edits by text, dashboard</small></label>
+<label class="opt"><input type="radio" name="plan" value="Growth">Growth<span class="price">$349/month</span><small>Booking, SEO, priority</small></label>
+<label class="opt"><input type="radio" name="plan" value="Not sure yet">Not sure yet<span class="price">We'll recommend</span><small>Decide after the mockup</small></label>
+</div>
+</fieldset>
+
+<fieldset class="step" data-step="3">
+<legend><span class="mono" style="color:var(--deep)">// STEP 4 OF 5</span><h2>Where should we send your mockup?</h2></legend>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<label class="field">Business name<input type="text" name="business_name" placeholder="Front Street Bakery" required></label>
+<label class="field">Current website (optional)<input type="text" name="current_website" placeholder="yourbusiness.com"></label>
+<label class="field">Your name<input type="text" name="name" placeholder="First and last" required></label>
+<label class="field">Mobile number<input type="tel" name="phone" placeholder="For updates by text" required></label>
+<label class="field" style="grid-column:1/-1">Email<input type="email" name="email" placeholder="you@yourbusiness.com" required></label>
+</div>
+<p class="err" id="formError" role="alert"></p>
+</fieldset>
+
+<div class="nav" id="formNav">
+<button type="button" class="btn btn-ghost" id="backBtn" style="visibility:hidden">Back</button>
+<button type="button" class="btn btn-primary" id="nextBtn" disabled>Continue</button>
+</div>
+</form>
+
+<section class="step" id="doneStep" aria-live="polite">
+<span style="width:72px;height:72px;border-radius:18px;background:var(--orange);display:flex;align-items:center;justify-content:center"><svg width="42" height="42" viewBox="0 0 60 60" aria-hidden="true"><path d="M0 57.5 L0 46.5 Q0 44 2.5 44 L17.5 44 Q20 44 20 41.5 L20 26.5 Q20 24 22.5 24 L37.5 24 Q40 24 40 21.5 L40 6.5 Q40 4 42.5 4 L57.5 4 Q60 4 60 6.5 L60 57.5 Q60 60 57.5 60 L2.5 60 Q0 60 0 57.5 Z" fill="#fff"/></svg></span>
+<div style="display:flex;flex-direction:column;gap:10px"><span class="mono" style="color:var(--deep)">// STEP 5 OF 5</span><h2>You're on the stoop.</h2><p class="sub" id="summary" style="font-size:17px;line-height:1.6"></p></div>
+<ol class="next-list">
+<li><span class="mono" style="color:var(--deep)">01</span><span><strong>We review your business.</strong> <span style="color:#57504A">A real person looks at your site, reviews and competitors.</span></span></li>
+<li><span class="mono" style="color:var(--deep)">02</span><span><strong>Your mockup arrives.</strong> <span style="color:#57504A">A custom homepage, sent by text and email.</span></span></li>
+<li><span class="mono" style="color:var(--deep)">03</span><span><strong>A quick walkthrough.</strong> <span style="color:#57504A">15 minutes to tweak it and pick your plan.</span></span></li>
+<li><span class="mono" style="color:var(--deep)">04</span><span><strong>Live in 14 days.</strong> <span style="color:#57504A">Then we keep climbing together.</span></span></li>
+</ol>
+<a href="/" style="font-weight:600;color:var(--deep)">Back to home</a>
+</section>
+</main>
+</div>
+<script src="/assets/get-started.js"></script>
+</body>
+</html>
