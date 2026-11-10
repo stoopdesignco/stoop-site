@@ -62,6 +62,26 @@
 .done-list .n{width:36px;height:36px;flex:none;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--deep)}
 .hidden{display:none}
 @media (max-width:760px){.side{max-width:none;padding:28px;gap:28px}.steps{flex-direction:row;overflow-x:auto}.steps li span:last-child{display:none}.side-art,.side-copy p{display:none}}
+@media (max-width:760px){
+.side{padding:20px 20px 18px;gap:18px}
+.side-copy h1{font-size:28px!important}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;overflow:visible}
+.steps li:last-child{display:none}
+.steps li{flex-direction:column;align-items:stretch;gap:8px;padding:0;background:none!important;border-radius:0;font-size:12px;color:#8F857B}
+.steps .ind{display:block;width:auto;height:4px;border-radius:2px;background:#3A322B!important;position:relative;overflow:hidden}
+.steps .ind svg{display:none}
+.steps .ind::after{content:"";position:absolute;inset:0;width:0;background:var(--orange);border-radius:2px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.steps li.done .ind::after{width:100%}
+.steps li.on .ind::after{width:100%;animation:segFill .6s cubic-bezier(.2,.8,.2,1)}
+.steps li span:last-child{display:block!important;white-space:nowrap}
+.steps li.on{color:#fff}
+.steps li.done{color:#C9C0B6}
+.prog{display:none}
+.nav.auto #nextBtn{display:none}
+.nav.auto.first{display:none}
+.nav{margin-top:28px}
+}
+@keyframes segFill{from{width:0}to{width:100%}}
 </style>
 </head>
 <body>

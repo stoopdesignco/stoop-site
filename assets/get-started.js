@@ -31,6 +31,8 @@
       if (on) Array.prototype.forEach.call(st.querySelectorAll('.opt'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
     });
     backBtn.style.visibility = current === 0 ? 'hidden' : 'visible';
+    var nav = document.getElementById('formNav');
+    if (nav) { nav.classList.toggle('auto', current < 2); nav.classList.toggle('first', current === 0); }
     nextLabel.textContent = current === 2 ? 'Request my free mockup' : 'Continue';
     nextBtn.disabled = current < 2 && !value(radioNames[current]);
     setSide(current);
@@ -42,11 +44,22 @@
     if (current < 2) {
       nextBtn.disabled = !value(radioNames[current]);
       if (e.target.type === 'radio' && e.target.name === radioNames[current]) {
-        setTimeout(function () { if (!nextBtn.disabled && current < 2) { current++; render(); } }, 380);
+        advanceSoon();
       }
     }
   });
   form.addEventListener('input', function () { errBox.textContent = ''; });
+  form.addEventListener('click', function (e) {
+    var r = e.target.closest && e.target.closest('.opt');
+    if (!r || current >= 2) return;
+    var inp = r.querySelector('input[type=radio]') || (r.htmlFor && document.getElementById(r.htmlFor));
+    if (inp && inp.checked && inp.name === radioNames[current]) advanceSoon();
+  });
+  var pending = false;
+  function advanceSoon() {
+    if (pending) return; pending = true;
+    setTimeout(function () { pending = false; if (current < 2 && value(radioNames[current])) { current++; render(); } }, 380);
+  }
 
   backBtn.addEventListener('click', function () { if (current > 0) { current--; render(); } });
 
