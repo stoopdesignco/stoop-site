@@ -71,7 +71,7 @@
     text: {
       title: 'Text your designer', cta: 'Get a designer on call', color: '#B5452A', custom: false,
       site: ['Rosa’s Bakery', 'rosasbakery.com', ['Menu', 'Order', 'Visit']],
-      lede: 'Need a change? Text your STOOP designer. A real person makes it, and you track it in your dashboard. These texts are just between you and us. Customers never see them.',
+      lede: 'Need a change? Text your designer, the same real person every time. They make it, and you track it in your dashboard. These texts are just between you and your designer. Customers never see them.',
       does: ['Text, email or use your dashboard to reach your designer', 'Track every request from received to live', 'Small edits live within 2 business days', 'Photos, hours, menus, prices, even new pages'],
       replaces: ['logging into a site builder', 'paying per change', 'waiting on support tickets'],
       apps: ['Wix', 'Squarespace', 'WordPress', 'Agency tickets'],
@@ -80,7 +80,7 @@
         sb.innerHTML = '<div class="fgrid"><div class="sum" id="tHours"><b style="font-family:var(--hf)">Hours</b><div><span>Mon–Fri</span>7 AM–3 PM</div><div><span>Saturday</span><b id="tSat">8 AM–1 PM</b></div></div>' +
           '<div class="sum" id="tSpec"><b style="font-family:var(--hf)">Today’s special</b><div style="display:block" id="tSpecTxt">Cinnamon twists</div><span class="hint">Fresh at 7 AM</span></div></div>' +
           '<span class="hint">Your live site. Watch it update when your designer finishes.</span>';
-        ext.innerHTML = '<div class="phone"><div class="phone-top"><span class="av">S</span><div><b>Your STOOP designer</b><small>Private · just you and us</small></div><span class="status st-new" id="tSt">Waiting</span></div>' +
+        ext.innerHTML = '<div class="phone"><div class="phone-top"><span class="av">S</span><div><b>Your designer</b><small>Private · same person every time</small></div><span class="status st-new" id="tSt">Waiting</span></div>' +
           '<div class="thread" id="tThread"><span class="hint" style="margin:auto">Pick a text below to send, as the owner</span></div>' +
           '<div class="qpick" id="tPick"><button data-k="sat">“Saturday hours are now 8 to 2”</button><button data-k="spec">“New special: pumpkin loaf”</button></div></div>';
         var MSG = { sat: ['Saturday hours are now 8 to 2', function () { $('#tSat').textContent = '8 AM–2 PM'; return '#tHours'; }],
