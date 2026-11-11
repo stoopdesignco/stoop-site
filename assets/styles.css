@@ -726,3 +726,4 @@ dialog.tool-dialog{width:min(1080px,calc(100% - 32px));overflow:hidden}
 }
 .lib-stats i{font-style:normal}
 @media (hover:none){.lib-filter button:hover{border-color:var(--line);color:var(--muted)}.lib-filter button.on:hover{border-color:transparent;color:#fff}}
+@media (max-width:700px){.hero-eyebrow{white-space:nowrap;letter-spacing:.03em;font-size:min(11.5px,calc((100vw - 44px) * .0285))}}
