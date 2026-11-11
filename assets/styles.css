@@ -670,3 +670,59 @@ dialog.tool-dialog{width:min(1080px,calc(100% - 32px));overflow:hidden}
 }
 @media (max-width:900px){.lib-in{grid-template-columns:minmax(0,1fr)}.lib-side,.lib-detail{min-width:0}.lib-list,.lib-filter{min-width:0;max-width:100%}}
 @media (max-width:700px){.ld-grid{grid-template-columns:minmax(0,1fr)}.custom{justify-content:flex-start}}
+
+/* ===== round 6 ===== */
+/* inputs never spill out of a demo */
+.fld{min-width:0}
+.fld input,.fld textarea{width:100%;min-width:0;box-sizing:border-box}
+.fgrid>*{min-width:0}
+/* library: sliding category pill */
+.lib-filter{position:relative;isolation:isolate}
+.lib-filter button,.lib-filter button.on{background:transparent;border-color:transparent;position:relative;z-index:1;transition:color .3s}
+.lib-filter button{border:1.5px solid var(--line)}
+.lib-filter button.on{color:#fff;border-color:transparent}
+.lib-pill{position:absolute;left:0;top:0;border-radius:17px;background:var(--ink);z-index:0;transition:transform .4s cubic-bezier(.2,.8,.2,1),width .4s cubic-bezier(.2,.8,.2,1),height .4s;pointer-events:none}
+/* library: sliding highlight behind the active tool */
+.lib-list{position:relative;isolation:isolate}
+.lib-item,.lib-item.on{position:relative;z-index:1;border-color:transparent;background:transparent;box-shadow:none}
+.lib-item:hover{background:rgba(250,248,245,.8)}
+.lib-item.on:hover{background:transparent}
+.lib-item.on b{color:var(--deep)}
+.lib-item .lib-ic{transition:background .35s,color .35s,transform .35s}
+.lib-item.on .lib-ic{transform:scale(1.06)}
+.lib-hl{position:absolute;left:0;top:0;border-radius:14px;background:#fff;border:1.5px solid var(--orange);box-shadow:0 10px 26px rgba(232,80,26,.12);z-index:0;transition:transform .45s cubic-bezier(.2,.8,.2,1),width .45s cubic-bezier(.2,.8,.2,1),height .45s cubic-bezier(.2,.8,.2,1);pointer-events:none;box-sizing:border-box}
+/* library: crossfade between tools */
+.lib-detail{transition:opacity .17s ease,transform .17s ease}
+.lib-detail.leaving{opacity:0;transform:translateY(8px)}
+.lib-detail.entering{animation:ldIn .4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes ldIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* library: calmer, airier text */
+.ld-info{gap:34px!important}
+.ld-info .lede{font-size:17px!important;line-height:1.75;color:#2B2622;max-width:46ch}
+.ld-info .dlg-sec{gap:16px}
+.ld-info .dlg-list{gap:16px;font-size:15px;line-height:1.6;color:#3D3730}
+.ld-info .dlg-sub{letter-spacing:.08em}
+.gone-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gone-chips s{display:inline-flex;align-items:center;min-height:32px;padding:5px 12px;border-radius:16px;background:#FAF8F5;font-size:13.5px;line-height:1.35;color:var(--muted);text-decoration-color:rgba(232,80,26,.55);text-decoration-thickness:1.5px}
+.ld-flow li span:last-child,.ld-plan p{line-height:1.65}
+@media (max-width:900px){
+  .lib-filter button{border-color:var(--line)}
+  .lib-filter button.on{border-color:transparent}
+  .lib-list{scroll-snap-type:x proximity}
+  .lib-item{scroll-snap-align:center;border:1.5px solid var(--line)}
+  .lib-item.on{border-color:transparent}
+  .lib-hl{border-radius:14px}
+}
+@media (max-width:700px){
+  .lib-stats{flex-wrap:nowrap;gap:6px}
+  .lib-stats span{height:34px;padding:0 11px;font-size:12.5px;white-space:nowrap}
+  .lib-detail{gap:26px}
+  .ld-info{padding-top:10px!important}
+  /* hero: drop the check row, give the buttons room */
+  .checks{display:none!important}
+  .hero-in{padding-bottom:52px}
+  .promise-in{padding-top:6px;padding-bottom:6px}
+  #how.section{padding-top:64px}
+}
+.lib-stats i{font-style:normal}
+@media (hover:none){.lib-filter button:hover{border-color:var(--line);color:var(--muted)}.lib-filter button.on:hover{border-color:transparent;color:#fff}}

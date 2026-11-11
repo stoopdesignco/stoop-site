@@ -45,28 +45,46 @@
   var ORDER = ['booking', 'quote', 'store', 'gift', 'chat', 'text', 'reviews', 'conditions'];
   var cat = 'all', cur = null;
 
-  $('#libFilter').innerHTML = CATS.map(function (c, i) { return '<button role="tab" data-c="' + c[0] + '"' + (i === 0 ? ' class="on" aria-selected="true"' : ' aria-selected="false"') + '>' + c[1] + '</button>'; }).join('');
+  $('#libFilter').innerHTML = '<i class="lib-pill" aria-hidden="true"></i>' + CATS.map(function (c, i) { return '<button role="tab" data-c="' + c[0] + '"' + (i === 0 ? ' class="on" aria-selected="true"' : ' aria-selected="false"') + '>' + c[1] + '</button>'; }).join('');
+  function slide(box, el, pill) {
+    if (!el || !pill) return;
+    pill.style.width = el.offsetWidth + 'px'; pill.style.height = el.offsetHeight + 'px';
+    pill.style.transform = 'translate(' + el.offsetLeft + 'px,' + el.offsetTop + 'px)';
+  }
+  function slideAll() { slide($('#libFilter'), $('#libFilter button.on'), $('.lib-pill')); slide($('#libList'), $('.lib-item.on'), $('.lib-hl')); }
+  window.addEventListener('resize', slideAll);
   function list() {
-    $('#libList').innerHTML = ORDER.filter(function (k) { return cat === 'all' || LIB[k].cat === cat; }).map(function (k) {
-      return '<a href="#' + k + '" data-k="' + k + '" class="lib-item' + (k === cur ? ' on' : '') + '"><span class="lib-ic">' + LIB[k].icon + '</span><span><b>' + T[k].title + '</b><small>' + LIB[k].short + '</small></span></a>';
+    $('#libList').innerHTML = '<i class="lib-hl" aria-hidden="true"></i>' + ORDER.filter(function (k) { return cat === 'all' || LIB[k].cat === cat; }).map(function (k, n) {
+      return '<a href="#' + k + '" data-k="' + k + '" style="animation-delay:' + (n * 40) + 'ms" class="lib-item' + (k === cur ? ' on' : '') + '"><span class="lib-ic">' + LIB[k].icon + '</span><span><b>' + T[k].title + '</b><small>' + LIB[k].short + '</small></span></a>';
     }).join('');
   }
   function planLine(k) { return k === 'text' ? 'Included with every monthly plan.' : 'Add it as your tool on Essentials, or choose up to 3 on Growth.'; }
+  var swapT;
   function show(k, scroll) {
     if (!T[k]) k = ORDER[0];
+    var det = $('#libDetail');
+    $$('.lib-item').forEach(function (a) { a.classList.toggle('on', a.dataset.k === k); });
+    slideAll();
+    if (cur && cur !== k && !reduce) {
+      det.classList.add('leaving'); clearTimeout(swapT);
+      swapT = setTimeout(function () { render(k, scroll); det.classList.remove('leaving'); det.classList.remove('entering'); void det.offsetWidth; det.classList.add('entering'); }, 170);
+    } else render(k, scroll);
+  }
+  function render(k, scroll) {
     cur = k; var t = T[k], L = LIB[k], i = ORDER.indexOf(k);
     var prev = ORDER[(i + ORDER.length - 1) % ORDER.length], next = ORDER[(i + 1) % ORDER.length];
     $('#libDetail').innerHTML =
       '<div class="ld-head"><span class="lib-ic big">' + L.icon + '</span><div><span class="ld-cat">' + CATNAME[L.cat] + '</span><h2>' + t.title + '</h2></div><span class="ld-n mono">' + String(i + 1).padStart(2, '0') + ' / 0' + ORDER.length + '</span></div>' +
       '<div class="ld-grid"><div class="ld-demo"><span class="ld-label">TRY IT LIVE · SAMPLE CLIENT SITE</span><div id="libDemo" class="ld-demo-in"></div></div>' +
-      '<div class="ld-info dlg-info">' + ST.info(t, { noTitle: true }) + '</div></div>' +
+      '<div class="ld-info dlg-info">' + ST.info(t, { noTitle: true, chips: true }) + '</div></div>' +
       '<div class="ld-flow"><span class="dlg-sub">HOW IT WORKS FOR YOUR CUSTOMERS</span><ol>' + L.flow.map(function (f, j) { return '<li><span class="ld-step">' + (j + 1) + '</span><b>' + f[0] + '</b><span>' + f[1] + '</span></li>'; }).join('') + '</ol></div>' +
       '<div class="ld-row"><div class="ld-card"><span class="dlg-sub">GREAT FOR</span><div class="apps-line">' + L.best.map(function (b) { return '<span>' + b + '</span>'; }).join('') + '</div></div>' +
       '<div class="ld-card ld-plan"><span class="dlg-sub">ON YOUR PLAN</span><p>' + planLine(k) + '</p><a href="index.html#plans">Compare plans ' + ST.ARW + '</a></div></div>' +
       '<div class="ld-nav"><button class="ld-pn" data-k="' + prev + '">← ' + T[prev].title + '</button><a href="get-started.html" class="btn btn-primary">' + t.cta + ' ' + ST.ARW + '</a><button class="ld-pn" data-k="' + next + '">' + T[next].title + ' →</button></div>';
     ST.mount($('#libDemo'), k, { cta: false });
     $$('.lib-item').forEach(function (a) { a.classList.toggle('on', a.dataset.k === k); });
-    var on = $('.lib-item.on'); if (on && on.scrollIntoView && window.innerWidth <= 900) on.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    var on = $('.lib-item.on'), ll = $('#libList');
+    if (on && window.innerWidth <= 900) ll.scrollTo({ left: on.offsetLeft - (ll.clientWidth - on.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
     if (history.replaceState) history.replaceState(null, '', '#' + k);
     if (scroll) { var y = $('#libDetail').getBoundingClientRect().top + window.scrollY - (window.innerWidth <= 900 ? 150 : 100); if (window.scrollY > y || window.innerWidth <= 900) window.scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' }); }
   }
@@ -74,7 +92,9 @@
     var b = e.target.closest('button'); if (!b) return;
     cat = b.dataset.c;
     $$('#libFilter button').forEach(function (x) { var o = x === b; x.classList.toggle('on', o); x.setAttribute('aria-selected', o ? 'true' : 'false'); });
-    list();
+    var fb = $('#libFilter');
+    if (window.innerWidth <= 900) fb.scrollTo({ left: b.offsetLeft - (fb.clientWidth - b.offsetWidth) / 2, behavior: reduce ? 'auto' : 'smooth' });
+    list(); slideAll();
     var first = $('.lib-item'); if (first && (cat !== 'all' && LIB[cur].cat !== cat)) show(first.dataset.k, false);
   });
   $('#libList').addEventListener('click', function (e) { var a = e.target.closest('.lib-item'); if (!a) return; e.preventDefault(); show(a.dataset.k, true); });
@@ -82,4 +102,6 @@
   window.addEventListener('hashchange', function () { var k = location.hash.slice(1); if (T[k] && k !== cur) show(k, true); });
   list();
   show(location.hash.slice(1) || ORDER[0], false);
+  slideAll(); setTimeout(slideAll, 300);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(slideAll);
 })();

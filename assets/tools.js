@@ -317,9 +317,10 @@
   }
   function infoHTML(t, opts) {
     opts = opts || {};
-    return '<div class="dlg-sec">' + (opts.noTitle ? '' : '<span class="eyebrow">// STOOP TOOL</span><h2 id="dlgTitle">' + t.title + '</h2>') + '<p class="lede" style="font-size:16px;margin:0">' + t.lede + '</p></div>' +
+    return '<div class="dlg-sec">' + (opts.noTitle ? '' : '<span class="eyebrow">STOOP TOOL</span><h2 id="dlgTitle">' + t.title + '</h2>') + '<p class="lede" style="font-size:16px;margin:0">' + t.lede + '</p></div>' +
       '<div class="dlg-sec"><span class="dlg-sub">WHAT IT DOES</span><ul class="dlg-list">' + t.does.map(function (x) { return '<li>' + CK + x + '</li>'; }).join('') + '</ul></div>' +
-      '<div class="dlg-gone"><span class="dlg-sub">NO MORE</span><p>' + t.replaces.map(function (x) { return '<s>' + x + '</s>'; }).join(', ') + '.</p></div>' +
+      (opts.chips ? '<div class="dlg-sec"><span class="dlg-sub">NO MORE</span><div class="gone-chips">' + t.replaces.map(function (x) { return '<s>' + x + '</s>'; }).join('') + '</div></div>'
+        : '<div class="dlg-gone"><span class="dlg-sub">NO MORE</span><p>' + t.replaces.map(function (x) { return '<s>' + x + '</s>'; }).join(', ') + '.</p></div>') +
       '<div class="dlg-sec"><span class="dlg-sub">APPS PEOPLE PAY FOR</span><div class="apps-line">' + t.apps.map(function (a) { return '<span>' + a + '</span>'; }).join('') + '</div></div>';
   }
   function mount(el, key, opts) {

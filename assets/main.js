@@ -149,7 +149,7 @@
     var q = qs[i], list = $('#faqList');
     fill.style.height = Math.max(0, q.offsetTop + q.offsetHeight / 2 - 22) + 'px';
     var sw = $('#faqSwap'); sw.classList.remove('swap'); void sw.offsetWidth; sw.classList.add('swap');
-    $('#faqNum').textContent = '// 0' + (i + 1); $('#faqQ').textContent = q.textContent; $('#faqA').textContent = q.nextElementSibling.textContent;
+    $('#faqNum').textContent = String(i + 1).padStart(2, '0'); $('#faqQ').textContent = q.textContent; $('#faqA').textContent = q.nextElementSibling.textContent;
   }
   qs.forEach(function (q, i) { q.addEventListener('click', function () { pick(i); }); });
   window.addEventListener('resize', function () { var on = qs.findIndex ? qs.findIndex(function (q) { return q.classList.contains('on'); }) : 0; pick(on < 0 ? 0 : on); });
