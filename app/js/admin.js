@@ -35,6 +35,7 @@
       var overdue = open.filter(function (x) { return new Date(x.due) < new Date(); });
       var mockups = P.filter(function (p) { return p.stage === 'new'; });
       var items = [];
+      open.filter(function (x) { return x.status === 'review' && x.approved; }).forEach(function (x) { items.push([0, 'green', 'check', 'Approved, ready to go live: ' + x.text, cm[x.client_id].name + ' approved ' + U.rel(x.approved), '#/requests']); });
       overdue.forEach(function (x) { items.push([0, 'red', 'alert', 'Overdue: ' + x.text, cm[x.client_id].name + ' · was due ' + U.rel(x.due), '#/requests']); });
       open.filter(function (x) { var ms = new Date(x.due) - Date.now(); return ms > 0 && ms < D; }).forEach(function (x) { items.push([1, 'amber', 'clock', x.text, cm[x.client_id].name + ' · due ' + U.rel(x.due), '#/requests']); });
       mockups.forEach(function (p) { var late = new Date(p.mockupDue) < new Date(); items.push([late ? 0 : 2, late ? 'red' : '', 'funnel', 'Mockup for ' + p.business, (late ? 'Late · was due ' : 'Due ') + U.rel(p.mockupDue), '#/pipeline']); });
@@ -76,7 +77,7 @@
             var items = list.filter(function (x) { return x.status === s; }).sort(function (a, b) { return a.due < b.due ? -1 : 1; });
             if (s === 'live') items = items.slice(0, 6);
             return '<div class="col" data-s="' + s + '"><div class="col-h">' + U.reqPill(s) + '<span class="n">' + items.length + '</span></div>' +
-              items.map(function (x) { return '<button class="tk" draggable="true" data-id="' + x.id + '"><span class="tk-meta"><span>' + esc(cm[x.client_id].name) + '</span><span>' + U.srcLabel(x.source) + '</span></span><b>' + esc(x.text) + '</b><span class="tk-meta">' + (s === 'live' ? '<span class="pill green">Live ' + U.rel(x.done) + '</span>' : U.due(x.due)) + '</span></button>'; }).join('') + '</div>';
+              items.map(function (x) { return '<button class="tk" draggable="true" data-id="' + x.id + '"><span class="tk-meta"><span>' + esc(cm[x.client_id].name) + '</span><span>' + U.srcLabel(x.source) + '</span></span><b>' + esc(x.text) + '</b><span class="tk-meta">' + (s === 'live' ? '<span class="pill green">Live ' + U.rel(x.done) + '</span>' : x.approved ? '<span class="pill green">' + icon('check', 12) + ' Client approved</span>' : U.due(x.due)) + '</span></button>'; }).join('') + '</div>';
           }).join('') + '</div>';
           U.$('#rf').addEventListener('change', function (e) { filter = e.target.value; draw(); });
         dnd();
@@ -173,13 +174,13 @@
   }
   function clientDetail(el, ctx, cid, tab) {
     tab = tab || 'overview';
-    Promise.all([API.client(cid), API.site(cid), API.grant(cid), API.counts(cid)]).then(function (r) {
-      var c = r[0], s = r[1] || {}, g = r[2], n = r[3];
+    Promise.all([API.client(cid), API.site(cid), API.grant(cid), API.counts(cid), API.texts(cid), API.closed(cid), API.automations(cid)]).then(function (r) {
+      var c = r[0], s = r[1] || {}, g = r[2], n = r[3], tx = r[4], closed = r[5], autos = r[6] || [];
       if (!c) return ctx.go('#/clients');
       ctx.title(c.name);
       ctx.actions('<a class="btn" href="#/clients">' + '<span class="lbl">All clients</span></a>' + (g ? '<a class="btn dark" href="#/as/' + cid + '/overview">' + icon('eye', 16) + '<span class="lbl">View as client</span></a>' : ''));
       var TABS = [['overview', 'Overview'], ['customers', 'Customer data'], ['requests', 'Requests'], ['messages', 'Messages'], ['billing', 'Billing'], ['access', 'Access log']];
-      el.innerHTML = '<div class="card" style="flex-direction:row;align-items:center;flex-wrap:wrap;gap:16px"><span class="av" style="width:52px;height:52px;border-radius:14px;font-size:17px">' + U.initials(c.name) + '</span><div style="flex:1;min-width:200px"><h2 style="font-size:22px">' + esc(c.name) + '</h2><span class="muted" style="font-size:13.5px">' + esc(c.owner) + ' · ' + esc(c.email) + ' · ' + esc(c.phone) + '</span></div>' + U.clientPill(c.status) + '<span class="pill dark">' + c.plan + (c.mrr ? ' · ' + money(c.mrr) + '/mo' : '') + '</span></div>' +
+      el.innerHTML = '<div class="card" style="flex-direction:row;align-items:center;flex-wrap:wrap;gap:16px"><span class="av" style="width:52px;height:52px;border-radius:14px;font-size:17px">' + U.initials(c.name) + '</span><div style="flex:1;min-width:200px"><h2 style="font-size:22px">' + esc(c.name) + '</h2><span class="muted" style="font-size:13.5px">' + esc(c.owner) + ' · ' + esc(c.email) + ' · ' + esc(c.phone) + '</span></div>' + U.clientPill(c.status) + (closed ? '<span class="pill amber">' + icon('moon', 12) + ' Closed today</span>' : '') + '<span class="pill dark">' + c.plan + (c.mrr ? ' · ' + money(c.mrr) + '/mo' : '') + '</span></div>' +
         (g ? '<div class="access">' + icon('unlock', 18) + '<span class="grow"><b>Support access is on</b> until ' + U.date(g.expires, true) + '. Every customer record you open is logged and visible to ' + esc(c.owner.split(' ')[0]) + '.</span></div>'
           : '<div class="access off">' + icon('lock', 18) + '<span class="grow">Customer info is <b>private</b>. You can see totals and everything about their site, but not their customers’ names or details.</span></div>') +
         '<div class="tabs" id="ct">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '"' + (t[0] === tab ? ' class="on"' : '') + '>' + t[1] + '</button>'; }).join('') + '</div><div id="cb"></div>';
@@ -188,7 +189,7 @@
       if (tab === 'overview') {
         cb.innerHTML = '<div class="grid g4">' + kpi('Leads', n.leads, 'all time') + kpi('Bookings', n.bookings, money(n.deposits) + ' in deposits') + kpi('Orders', n.orders, money(n.sales) + ' in sales') + kpi('Chats', n.chats, 'conversations') + '</div>' +
           '<div class="grid g2" style="margin-top:16px"><div class="card"><div class="card-h"><h3>Site</h3>' + (c.domain ? '<span class="pill green">' + esc(c.domain) + '</span>' : '<span class="pill orange">Not live yet</span>') + '</div><div class="kv"><span>Uptime</span><b>' + (s.uptime != null ? s.uptime + '%' : '—') + '</b><span>Speed score</span><b>' + (s.speed || '—') + '</b><span>Certificate</span><b>' + (s.ssl != null ? 'Renews in ' + s.ssl + ' days' : '—') + '</b><span>Domain</span><b>' + (s.renew != null ? 'Renews in ' + s.renew + ' days' : '—') + '</b><span>Last update</span><b>' + U.rel(s.deploy) + '</b></div></div>' +
-          '<div class="card"><div class="card-h"><h3>Plan and tools</h3></div><div class="kv"><span>Plan</span><b>' + c.plan + '</b><span>Started</span><b>' + U.date(c.started) + '</b><span>Term ends</span><b>' + U.date(c.termEnds) + '</b><span>Tools</span><b>' + (c.tools.length ? c.tools.map(function (t) { return '<span class="pill" style="margin:0 4px 4px 0">' + t + '</span>'; }).join('') : 'None yet') + '</b></div></div></div>';
+          '<div class="card"><div class="card-h"><h3>Plan and tools</h3></div><div class="kv"><span>Plan</span><b>' + c.plan + '</b><span>Started</span><b>' + U.date(c.started) + '</b><span>Term ends</span><b>' + U.date(c.termEnds) + '</b><span>Texts this month</span><b>' + (tx ? tx.used + (tx.limit ? ' of ' + tx.limit : '') : '—') + '</b><span>Automations on</span><b>' + autos.filter(function (a) { return a.on; }).length + ' of ' + autos.length + '</b><span>Tools</span><b>' + (c.tools.length ? c.tools.map(function (t) { return '<span class="pill" style="margin:0 4px 4px 0">' + t + '</span>'; }).join('') : 'None yet') + '</b></div></div></div>';
       } else if (tab === 'customers') {
         customerData(cb, c, g);
       } else if (tab === 'requests') {

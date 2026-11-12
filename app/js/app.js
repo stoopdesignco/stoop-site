@@ -13,7 +13,7 @@
     if (t.indexOf('booking') > -1) n.push(['bookings', 'Bookings', 'cal']);
     if (t.indexOf('store') > -1 || t.indexOf('gift') > -1) n.push(['orders', 'Orders', 'bag']);
     if (t.indexOf('chat') > -1) n.push(['chat', 'Customer chat', 'chat']);
-    n.push(['designer', 'Your designer', 'phone'], ['billing', 'Billing', 'card'], ['settings', 'Settings', 'gear']);
+    n.push(['automations', 'Automations', 'zap'], ['designer', 'Your designer', 'phone'], ['billing', 'Billing', 'card'], ['settings', 'Settings', 'gear']);
     return n;
   }
 
@@ -84,7 +84,12 @@
       API.client(u.client_id).then(function (c) { clientPage(c, parts[0] || 'overview', '#/', null, parts.slice(1)); });
     }
   }
-  function freshPage() { var old = U.$('#page'), el = old.cloneNode(false); old.parentNode.replaceChild(el, old); window.scrollTo(0, 0); return el; }
+  function label(el) { U.$$('table', el).forEach(function (t) { if (t.dataset.lb) return; var hs = U.$$('thead th', t).map(function (h) { return h.textContent; }); U.$$('tbody tr', t).forEach(function (tr) { U.$$('td', tr).forEach(function (td, i) { if (hs[i]) td.setAttribute('data-label', hs[i]); }); }); t.dataset.lb = '1'; }); }
+  function freshPage() {
+    var old = U.$('#page'), el = old.cloneNode(false); old.parentNode.replaceChild(el, old); window.scrollTo(0, 0);
+    if (window.MutationObserver) new MutationObserver(function () { label(el); }).observe(el, { childList: true, subtree: true });
+    return el;
+  }
   function mark(page) { U.$$('#nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.p === page); }); }
   function clientPage(c, page, base, banner, rest) {
     var nav = clientNav(c), allowed = nav.map(function (n) { return n[0]; });

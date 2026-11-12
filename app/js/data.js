@@ -120,6 +120,32 @@
     return ok({ locked: false, rows: rows });
   }
 
+  var AUTOS = [
+    { key: 'lead_reply', tool: null, name: 'Instant reply to new leads', when: 'Right away', icon: 'inbox', on: true, text: 'Thanks for reaching out to {business}! We got your message and will get back to you within the hour.' },
+    { key: 'missed_call', tool: null, name: 'Missed-call text-back', when: 'When you miss a call', icon: 'phone', on: false, text: 'Sorry we missed your call! This is {business}. How can we help? You can also book online: {link}' },
+    { key: 'review', tool: null, name: 'Review requests', when: '2 hours after a visit, order or job', icon: 'star', on: true, text: 'Thanks for choosing {business}! Would you leave us a quick review? It really helps: {link}' },
+    { key: 'book_confirm', tool: 'booking', name: 'Booking confirmation', when: 'Right after someone books', icon: 'cal', on: true, text: 'You’re booked with {business} for {service} on {date}. See you then!' },
+    { key: 'book_remind', tool: 'booking', name: 'Booking reminders', when: '24 hours and 2 hours before', icon: 'clock', on: true, text: 'Reminder: {service} with {business} {date}. Reply C to confirm or R to reschedule.' },
+    { key: 'rebook', tool: 'booking', name: 'Rebook nudge', when: '4 weeks after a visit', icon: 'cal', on: false, text: 'It’s been a few weeks! Ready for your next visit at {business}? Book here: {link}' },
+    { key: 'quote_follow', tool: 'quote', name: 'Quote follow-up', when: '2 days after a quote', icon: 'inbox', on: true, text: 'Hi! Still thinking about your quote from {business}? Tap to book it: {link}' },
+    { key: 'order_ready', tool: 'store', name: 'Order ready', when: 'When you mark an order fulfilled', icon: 'bag', on: true, text: 'Good news: your {business} order is ready!' },
+    { key: 'after_hours', tool: 'chat', name: 'After-hours chat reply', when: 'When you’re closed', icon: 'chat', on: true, text: 'Thanks for your message! We’re closed right now and will reply first thing when we open.' },
+    { key: 'weekly', tool: null, name: 'Weekly summary text to you', when: 'Mondays at 8 AM', icon: 'grid', on: true, owner: true, text: '' }
+  ];
+  function autoState(cid) {
+    db.autos = db.autos || {};
+    if (db.autos[cid]) Object.keys(db.autos[cid]).forEach(function (k) { if (db.autos[cid][k].sent < 0) db.autos[cid][k].sent = Math.abs(db.autos[cid][k].sent); });
+    if (!db.autos[cid]) {
+      var h = 0; for (var i = 0; i < cid.length; i++) h = (h * 31 + cid.charCodeAt(i)) >>> 0;
+      db.autos[cid] = {};
+      AUTOS.forEach(function (a, k) { db.autos[cid][a.key] = { on: a.on, text: a.text, sent: a.on ? ((h >>> k) % 40) + 3 : 0 }; });
+    }
+    return db.autos[cid];
+  }
+  function client(cid) { return db.clients.find(function (c) { return c.id === cid; }); }
+  function ownClient(cid) { return user && user.role === 'client' && user.client_id === cid; }
+  var LIMITS = { Growth: 1000, Essentials: 500, Launch: 0 };
+
   window.API = {
     /* auth (Supabase Auth magic link later) */
     user: function () { return user; },
@@ -182,6 +208,50 @@
       db.grants.forEach(function (g) { if (g.client_id === cid) g.expires = new Date(Date.now() - 1000).toISOString(); }); save(); return ok(true);
     },
     accessLog: function (cid) { return ok(db.accessLog.filter(function (l) { return mine(l.client_id) && (!cid || l.client_id === cid); })); },
+
+    /* automations (customer texts) */
+    automations: function (cid) {
+      if (!mine(cid)) return ok([]);
+      var c = client(cid), st = autoState(cid);
+      return ok(AUTOS.filter(function (a) { return !a.tool || c.tools.indexOf(a.tool) > -1; }).map(function (a) { return Object.assign({ def: a.text }, a, st[a.key]); }));
+    },
+    setAutomation: function (cid, key, patch) {
+      if (!ownClient(cid)) return ok(null);
+      var st = autoState(cid); Object.assign(st[key], patch); save(); return ok(st[key]);
+    },
+    texts: function (cid) {
+      if (!mine(cid)) return ok(null);
+      var st = autoState(cid), used = 0; Object.keys(st).forEach(function (k) { used += st[k].sent || 0; });
+      return ok({ used: used, limit: LIMITS[client(cid).plan] || 0 });
+    },
+    logText: function (cid, key) { if (!mine(cid)) return ok(null); var st = autoState(cid); if (st[key]) st[key].sent = (st[key].sent || 0) + 1; save(); return ok(true); },
+    /* closed today */
+    closed: function (cid) { db.closed = db.closed || {}; var x = db.closed[cid]; return ok(mine(cid) && x && new Date(x.until) > new Date() ? x : null); },
+    setClosed: function (cid, reason) {
+      if (!ownClient(cid)) return ok(null);
+      db.closed = db.closed || {};
+      if (!reason) { delete db.closed[cid]; save(); return ok(null); }
+      var end = new Date(); end.setHours(23, 59, 0, 0);
+      db.closed[cid] = { reason: reason, until: end.toISOString() }; save(); return ok(db.closed[cid]);
+    },
+    /* approve a change that's in client review */
+    approveRequest: function (rid) {
+      var r = db.requests.find(function (x) { return x.id === rid; });
+      if (!r || !ownClient(r.client_id) || r.status !== 'review') return ok(null);
+      r.approved = new Date().toISOString();
+      db.messages.push({ id: id('m'), client_id: r.client_id, from: 'client', body: 'Approved ✓ “' + r.text + '”', at: r.approved });
+      save(); return ok(r);
+    },
+    /* what the site brought in, last 30 days */
+    roi: function (cid) {
+      if (!mine(cid)) return ok(null);
+      var since = Date.now() - 30 * D;
+      function mineRows(t) { return db[t].filter(function (r) { return r.client_id === cid; }); }
+      var orders = mineRows('orders').filter(function (o) { return new Date(o.at) > since; });
+      var bookings = mineRows('bookings'), leads = mineRows('leads');
+      var sales = orders.reduce(function (s, o) { return s + o.total; }, 0), deposits = bookings.reduce(function (s, b) { return s + b.deposit; }, 0);
+      return ok({ total: sales + deposits, sales: sales, deposits: deposits, orders: orders.length, bookings: bookings.length, leads: leads.length });
+    },
 
     /* STOOP-only */
     pipeline: function () { return ok(isAdmin() ? db.pipeline : []); },
