@@ -114,6 +114,7 @@
   }
   /* customer tables: leads, bookings, orders, chats */
   function customerRows(table, clientId, area) {
+    genBookings();
     var rows = db[table].filter(function (r) { return r.client_id === clientId; });
     if (!canSeeCustomers(clientId)) return ok({ locked: true, count: rows.length });
     if (isAdmin()) { db.accessLog.unshift({ client_id: clientId, who: user.name + ' (STOOP)', area: area, at: new Date().toISOString() }); save(); }
@@ -145,6 +146,55 @@
   function client(cid) { return db.clients.find(function (c) { return c.id === cid; }); }
   function ownClient(cid) { return user && user.role === 'client' && user.client_id === cid; }
   var LIMITS = { Growth: 1000, Essentials: 500, Launch: 0 };
+  /* buyout rule (placeholder until Chase sets pricing): remaining months in the 12-month term x monthly price, minimum 6 months */
+  var BUYOUT = { minMonths: 6 };
+  function rng(seed) { var h = 0; for (var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0; return function () { h = (h * 1103515245 + 12345) >>> 0; return (h >>> 8) / 16777216; }; }
+  var SERVICES = {
+    c_juniper: [['60-min massage', 60, 95, 25], ['90-min massage', 90, 135, 25], ['Couples session', 90, 210, 50], ['30-min chair massage', 30, 45, 0]],
+    c_redrock: [['Sunrise hike', 120, 80, 40], ['Half-day canyon tour', 240, 150, 50], ['Full-day canyon tour', 480, 280, 100]]
+  };
+  function services(cid) { return (SERVICES[cid] || [['Appointment', 60, 100, 25]]).map(function (s) { return { name: s[0], mins: s[1], price: s[2], deposit: s[3] }; }); }
+  var NAMES = [['Avery Stone', 'avery.s'], ['Blake Moreno', 'blake.m'], ['Casey Lin', 'casey.l'], ['Devon Hart', 'devon.h'], ['Emery Cole', 'emery.c'], ['Finley Ross', 'finley.r'], ['Gray Patel', 'gray.p'], ['Harper Diaz', 'harper.d'], ['Indy Brooks', 'indy.b'], ['Jules Kim', 'jules.k'], ['Kai Turner', 'kai.t'], ['Lane Ortiz', 'lane.o'], ['Marlo Young', 'marlo.y'], ['Noa Ward', 'noa.w'], ['Oakley Shaw', 'oakley.s'], ['Quinn Reyes', 'quinn.r']];
+  function genBookings() {
+    if (db.bookGen) return; db.bookGen = 1;
+    db.clients.forEach(function (c) {
+      if (c.tools.indexOf('booking') < 0) return;
+      var r = rng(c.id + 'b'), sv = services(c.id), long = sv[0].mins >= 120;
+      for (var dd = -21; dd <= 35; dd++) {
+        var day = new Date(now + dd * D); if (day.getDay() === 0) continue;
+        var n = Math.floor(r() * (long ? 3 : 5)), ds = day.toDateString();
+        var taken = db.bookings.filter(function (b) { return b.client_id === c.id && new Date(b.when).toDateString() === ds; }).map(function (b) { var st = new Date(b.when).getTime(), sv2 = services(c.id).find(function (x) { return x.name === b.service; }); return [st, st + ((b.mins || (sv2 && sv2.mins) || 60) * 60e3)]; });
+        for (var k = 0; k < n; k++) {
+          var s = sv[Math.floor(r() * sv.length)], hr = long ? [7, 9, 13][Math.floor(r() * 3)] : 9 + Math.floor(r() * 8);
+          if (hr + s.mins / 60 > 18) continue;
+          var w = new Date(day); w.setHours(hr, 0, 0, 0);
+          var a0 = w.getTime(), a1 = a0 + s.mins * 60e3;
+          if (taken.some(function (t) { return a0 < t[1] && a1 > t[0]; })) continue;
+          taken.push([a0, a1]);
+          if (Math.abs(w - now) < 3 * H && dd === 0 && k > 1) continue;
+          var nm = NAMES[Math.floor(r() * NAMES.length)], past = w < new Date(now);
+          var st = past ? (r() < 0.08 ? 'noshow' : r() < 0.06 ? 'cancelled' : 'completed') : (w - now < 30 * H ? 'reminder' : 'confirmed');
+          db.bookings.push({ id: id('b'), client_id: c.id, customer: nm[0], email: nm[1] + '@email.com', phone: '(555) 010-' + (1000 + Math.floor(r() * 8999)), service: s.name, mins: s.mins, price: s.price, when: w.toISOString(), deposit: s.deposit, status: st, notes: '' });
+        }
+      }
+    });
+    db.bookings.forEach(function (b) { if (!b.mins) { var s = services(b.client_id).find(function (x) { return x.name === b.service; }) || services(b.client_id)[0]; b.mins = s.mins; b.price = s.price; b.notes = b.notes || ''; } });
+    save();
+  }
+  function series(cid) {
+    db.series = db.series || {};
+    if (db.series[cid]) return db.series[cid];
+    var c = client(cid), r = rng(cid), out = [], live = c.status !== 'building';
+    var base = 50 + r() * 60, leadRate = 0.012 + r() * 0.01, sell = c.tools.indexOf('store') > -1 || c.tools.indexOf('gift') > -1, book = c.tools.indexOf('booking') > -1;
+    for (var i = 29; i >= 0; i--) {
+      var day = new Date(now - i * D); day.setHours(12, 0, 0, 0);
+      var wk = day.getDay(), boost = (wk === 5 || wk === 6) ? 1.25 : wk === 1 ? 0.85 : 1;
+      var v = live ? Math.round(base * boost * (0.75 + r() * 0.5) * (1 + (29 - i) * 0.006)) : 0;
+      var src = { google: Math.round(v * (0.42 + r() * 0.1)), maps: Math.round(v * (0.18 + r() * 0.06)), social: Math.round(v * (0.1 + r() * 0.06)) }; src.direct = Math.max(0, v - src.google - src.maps - src.social);
+      out.push({ d: day.toISOString(), visitors: v, leads: live ? Math.round(v * leadRate + r() * 1.2) : 0, bookings: live && book ? Math.round(r() * 3) : 0, sales: live && sell ? Math.round(r() * 4) * 14 : 0, src: src, uptime: live ? (r() < 0.06 ? +(99 + r()).toFixed(2) : 100) : null, speed: live ? Math.round(90 + r() * 9) : null });
+    }
+    db.series[cid] = out; save(); return out;
+  }
 
   window.API = {
     /* auth (Supabase Auth magic link later) */
@@ -177,7 +227,7 @@
     invoices: function (cid) { return ok(db.invoices.filter(function (i) { return mine(i.client_id) && (!cid || i.client_id === cid); })); },
     /* customer counts are business totals, safe for admins */
     counts: function (cid) {
-      if (!mine(cid)) return ok(null);
+      if (!mine(cid)) return ok(null); genBookings();
       function n(t) { return db[t].filter(function (r) { return r.client_id === cid; }).length; }
       var dep = db.bookings.filter(function (b) { return b.client_id === cid; }).reduce(function (s, b) { return s + b.deposit; }, 0);
       var sales = db.orders.filter(function (o) { return o.client_id === cid; }).reduce(function (s, o) { return s + o.total; }, 0);
@@ -186,11 +236,24 @@
 
     /* customer data: private unless granted */
     leads: function (cid) { return customerRows('leads', cid, 'Leads'); },
+    services: function (cid) { return ok(mine(cid) ? services(cid) : []); },
+    addBooking: function (cid, b) {
+      if (!canSeeCustomers(cid) || isAdmin()) return ok(null);
+      var s = services(cid).find(function (x) { return x.name === b.service; }) || services(cid)[0];
+      var nb = { id: id('b'), client_id: cid, customer: b.customer, email: b.email || '', phone: b.phone || '', service: s.name, mins: s.mins, price: s.price, when: b.when, deposit: b.deposit ? s.deposit : 0, status: 'confirmed', notes: b.notes || '' };
+      db.bookings.push(nb); var st = autoState(cid); if (st.book_confirm && st.book_confirm.on) st.book_confirm.sent++; save(); return ok(nb);
+    },
+    blocks: function (cid) { db.blocks = db.blocks || {}; return ok(mine(cid) ? (db.blocks[cid] || []) : []); },
+    toggleBlock: function (cid, day) {
+      if (!ownClient(cid)) return ok(null);
+      db.blocks = db.blocks || {}; var l = db.blocks[cid] = db.blocks[cid] || [], i = l.indexOf(day);
+      if (i > -1) l.splice(i, 1); else l.push(day); save(); return ok(l);
+    },
     bookings: function (cid) { return customerRows('bookings', cid, 'Bookings'); },
     orders: function (cid) { return customerRows('orders', cid, 'Orders'); },
     chats: function (cid) { return customerRows('chats', cid, 'Chat'); },
     updateLead: function (lid, status) { var l = db.leads.find(function (x) { return x.id === lid; }); if (!l || !canSeeCustomers(l.client_id)) return ok(null); l.status = status; save(); return ok(l); },
-    updateBooking: function (bid, status) { var b = db.bookings.find(function (x) { return x.id === bid; }); if (!b || !canSeeCustomers(b.client_id)) return ok(null); b.status = status; save(); return ok(b); },
+    updateBooking: function (bid, patch) { var b = db.bookings.find(function (x) { return x.id === bid; }); if (!b || !canSeeCustomers(b.client_id) || isAdmin()) return ok(null); if (typeof patch === 'string') patch = { status: patch }; Object.assign(b, patch); save(); return ok(b); },
     updateOrder: function (oid, status) { var o = db.orders.find(function (x) { return x.id === oid; }); if (!o || !canSeeCustomers(o.client_id)) return ok(null); o.status = status; save(); return ok(o); },
     replyChat: function (chid, body) {
       var c = db.chats.find(function (x) { return x.id === chid; }); if (!c || !canSeeCustomers(c.client_id)) return ok(null);
@@ -244,13 +307,61 @@
     },
     /* what the site brought in, last 30 days */
     roi: function (cid) {
-      if (!mine(cid)) return ok(null);
+      if (!mine(cid)) return ok(null); genBookings();
       var since = Date.now() - 30 * D;
       function mineRows(t) { return db[t].filter(function (r) { return r.client_id === cid; }); }
       var orders = mineRows('orders').filter(function (o) { return new Date(o.at) > since; });
-      var bookings = mineRows('bookings'), leads = mineRows('leads');
+      var bookings = mineRows('bookings').filter(function (b) { var t = new Date(b.when).getTime(); return t > since && t < Date.now() + 30 * D && b.status !== 'cancelled'; }), leads = mineRows('leads');
       var sales = orders.reduce(function (s, o) { return s + o.total; }, 0), deposits = bookings.reduce(function (s, b) { return s + b.deposit; }, 0);
       return ok({ total: sales + deposits, sales: sales, deposits: deposits, orders: orders.length, bookings: bookings.length, leads: leads.length });
+    },
+
+    /* analytics: totals only (no customer names), so admins can see them too */
+    analytics: function (cid) { if (!mine(cid)) return ok(null); return ok(series(cid)); },
+    pages: function (cid) {
+      if (!mine(cid)) return ok([]);
+      var c = client(cid), r = rng(cid + 'p'), p = [['Home', '/'], ['Services', '/services']];
+      if (c.tools.indexOf('booking') > -1) p.push(['Book', '/book']);
+      if (c.tools.indexOf('store') > -1) p.push(['Shop', '/shop']);
+      if (c.tools.indexOf('quote') > -1) p.push(['Get a quote', '/quote']);
+      p.push(['About', '/about'], ['Contact', '/contact']);
+      var left = 100; return ok(p.map(function (x, i) { var s = i === p.length - 1 ? left : Math.max(3, Math.round(left * (i === 0 ? 0.42 : 0.3 + r() * 0.2))); left -= s; return { name: x[0], path: x[1], share: Math.max(1, s) }; }));
+    },
+    mrrHistory: function () {
+      if (!isAdmin()) return ok([]);
+      var out = [];
+      for (var m = 11; m >= 0; m--) {
+        var dt = new Date(); dt.setDate(1); dt.setMonth(dt.getMonth() - m); var end = new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+        out.push({ d: dt.toISOString(), value: db.clients.filter(function (c) { return new Date(c.started) <= end; }).reduce(function (s, c) { return s + c.mrr; }, 0) });
+      }
+      return ok(out);
+    },
+    /* buyout */
+    buyout: function (cid) {
+      if (!mine(cid)) return ok(null);
+      var c = client(cid); if (!c.mrr) return ok({ eligible: false });
+      var left = Math.max(0, Math.ceil((new Date(c.termEnds) - Date.now()) / (30 * D)));
+      var months = Math.max(BUYOUT.minMonths, left);
+      db.buyouts = db.buyouts || {};
+      return ok({ eligible: true, monthsLeft: left, months: months, price: months * c.mrr, monthly: c.mrr, requested: db.buyouts[cid] || null });
+    },
+    requestBuyout: function (cid) {
+      if (!ownClient(cid)) return ok(null);
+      var c = client(cid), left = Math.max(0, Math.ceil((new Date(c.termEnds) - Date.now()) / (30 * D))), price = Math.max(BUYOUT.minMonths, left) * c.mrr;
+      db.buyouts = db.buyouts || {}; db.buyouts[cid] = { at: new Date().toISOString(), price: price };
+      db.requests.unshift({ id: id('r'), client_id: cid, text: 'Buyout request · quoted ' + '$' + price.toLocaleString('en-US'), source: 'dashboard', status: 'received', created: new Date().toISOString(), due: new Date(Date.now() + 48 * H).toISOString(), notes: '', buyout: true });
+      db.messages.push({ id: id('m'), client_id: cid, from: 'client', body: 'I’d like to buy out my site. The dashboard quoted $' + price.toLocaleString('en-US') + '.', at: new Date().toISOString() });
+      save(); return ok(db.buyouts[cid]);
+    },
+    buyouts: function () { return ok(isAdmin() ? (db.buyouts || {}) : {}); },
+    /* mockups (STOOP-only) */
+    updateMockup: function (pid, patch) {
+      var p = db.pipeline.find(function (x) { return x.id === pid; }); if (!p || !isAdmin()) return ok(null);
+      p.mock = Object.assign(p.mock || { steps: [false, false, false, false, false], url: '' }, patch); save(); return ok(p);
+    },
+    sendMockup: function (pid) {
+      var p = db.pipeline.find(function (x) { return x.id === pid; }); if (!p || !isAdmin()) return ok(null);
+      p.stage = 'mockup'; p.mockSent = new Date().toISOString(); save(); return ok(p);
     },
 
     /* STOOP-only */

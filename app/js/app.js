@@ -5,11 +5,11 @@
   var shellRole = null;
 
   var ADMIN_NAV = [
-    ['today', 'Today', 'today'], ['requests', 'Requests', 'queue'], ['pipeline', 'Sales pipeline', 'funnel'], ['clients', 'Clients', 'users'],
+    ['today', 'Today', 'today'], ['requests', 'Requests', 'queue'], ['pipeline', 'Sales pipeline', 'funnel'], ['mockups', 'Mockups', 'grid'], ['clients', 'Clients', 'users'],
     ['builds', 'Builds', 'build'], ['messages', 'Messages', 'chat'], ['money', 'Money', 'money'], ['health', 'Site health', 'pulse']
   ];
   function clientNav(c) {
-    var t = c.tools || [], n = [['overview', 'Overview', 'grid'], ['leads', 'Leads', 'inbox']];
+    var t = c.tools || [], n = [['overview', 'Overview', 'grid'], ['analytics', 'Analytics', 'pulse'], ['leads', 'Leads', 'inbox']];
     if (t.indexOf('booking') > -1) n.push(['bookings', 'Bookings', 'cal']);
     if (t.indexOf('store') > -1 || t.indexOf('gift') > -1) n.push(['orders', 'Orders', 'bag']);
     if (t.indexOf('chat') > -1) n.push(['chat', 'Customer chat', 'chat']);

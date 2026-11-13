@@ -67,7 +67,8 @@
 
   var dr = document.getElementById('drawer'), scrim = document.getElementById('scrim');
   function openDrawer(html, onMount) {
-    dr.innerHTML = html; dr.classList.add('on'); scrim.classList.add('on'); dr.setAttribute('aria-hidden', 'false');
+    var nd = dr.cloneNode(false); dr.parentNode.replaceChild(nd, dr); dr = nd;
+    dr.innerHTML = html; void dr.offsetWidth; dr.classList.add('on'); scrim.classList.add('on'); dr.setAttribute('aria-hidden', 'false');
     var x = dr.querySelector('[data-close]'); if (x) x.addEventListener('click', closeDrawer);
     if (onMount) onMount(dr);
   }
@@ -85,5 +86,38 @@
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function on(root, sel, ev, fn) { root.addEventListener(ev, function (e) { var t = e.target.closest(sel); if (t && root.contains(t)) fn(e, t); }); }
 
-  window.UI = { icon: icon, esc: esc, money: money, rel: rel, date: date, initials: initials, due: due, reqPill: reqPill, clientPill: clientPill, srcLabel: srcLabel, openDrawer: openDrawer, closeDrawer: closeDrawer, toast: toast, lockPanel: lockPanel, $: $, $$: $$, on: on, REQ: REQ };
+  /* interactive charts: tap a bar or point to read it */
+  function bars(pts, o) {
+    o = o || {};
+    var max = Math.max.apply(null, pts.map(function (p) { return p.value; }).concat([1])), sel = o.sel != null ? o.sel : pts.length - 1, every = o.every || 1;
+    return '<div class="ichart"><div class="ich-read"><b data-rv>' + esc(pts[sel] ? pts[sel].show : '') + '</b><span data-rl>' + esc(pts[sel] ? pts[sel].full : '') + '</span></div>' +
+      '<div class="chart' + (pts.length > 14 ? ' dense' : '') + '" style="height:' + (o.h || 150) + 'px">' + pts.map(function (p, i) {
+        return '<button type="button" class="bar-b' + (i === sel ? ' sel' : '') + '" data-v="' + esc(p.show) + '" data-l="' + esc(p.full) + '" aria-label="' + esc(p.full + ': ' + p.show) + '"><i style="height:' + Math.max(2, Math.round(p.value / max * 100)) + '%;animation-delay:' + (i * 18) + 'ms"></i><span>' + (i % every === 0 || i === pts.length - 1 ? esc(p.label) : '&nbsp;') + '</span></button>';
+      }).join('') + '</div></div>';
+  }
+  function line(pts, o) {
+    o = o || {};
+    var vals = pts.map(function (p) { return p.value; }), max = Math.max.apply(null, vals.concat([1])), min = o.zero ? 0 : Math.min.apply(null, vals), span = (max - min) || 1, n = pts.length, sel = o.sel != null ? o.sel : n - 1;
+    function x(i) { return n === 1 ? 50 : i / (n - 1) * 100; } function y(v) { return 92 - (v - min) / span * 80; }
+    var path = pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.value).toFixed(2); }).join(' ');
+    return '<div class="ichart"><div class="ich-read"><b data-rv>' + esc(pts[sel].show) + '</b><span data-rl>' + esc(pts[sel].full) + '</span></div><div class="lchart" style="height:' + (o.h || 170) + 'px">' +
+      '<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="' + path + ' L100 100 L0 100 Z" class="lc-fill"/><path d="' + path + '" class="lc-line" vector-effect="non-scaling-stroke"/></svg>' +
+      pts.map(function (p, i) { return '<button type="button" class="lc-pt' + (i === sel ? ' sel' : '') + '" style="left:' + x(i) + '%;top:' + y(p.value) + '%" data-v="' + esc(p.show) + '" data-l="' + esc(p.full) + '" aria-label="' + esc(p.full + ': ' + p.show) + '"></button>'; }).join('') +
+      '</div><div class="lc-x">' + pts.map(function (p, i) { return (i % (o.every || 1) === 0 || i === n - 1) ? '<span style="left:' + x(i) + '%">' + esc(p.label) + '</span>' : ''; }).join('') + '</div></div>';
+  }
+  function spark(vals, color) {
+    var max = Math.max.apply(null, vals.concat([1])), min = Math.min.apply(null, vals), span = (max - min) || 1;
+    var d = vals.map(function (v, i) { return (i ? 'L' : 'M') + (i / Math.max(1, vals.length - 1) * 100).toFixed(1) + ' ' + (28 - (v - min) / span * 24).toFixed(1); }).join(' ');
+    return '<svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + '" fill="none" stroke="' + (color || '#E8501A') + '" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.ichart .bar-b, .ichart .lc-pt'); if (!b) return;
+    var ch = b.closest('.ichart');
+    Array.prototype.forEach.call(ch.querySelectorAll('.bar-b, .lc-pt'), function (x) { x.classList.toggle('sel', x === b); });
+    ch.querySelector('[data-rv]').textContent = b.dataset.v; ch.querySelector('[data-rl]').textContent = b.dataset.l;
+  });
+  function dayLabel(iso) { return new Date(iso).toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2); }
+  function dayFull(iso) { return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }); }
+
+  window.UI = { icon: icon, esc: esc, money: money, rel: rel, date: date, initials: initials, due: due, reqPill: reqPill, clientPill: clientPill, srcLabel: srcLabel, openDrawer: openDrawer, closeDrawer: closeDrawer, toast: toast, lockPanel: lockPanel, $: $, $$: $$, on: on, REQ: REQ, bars: bars, line: line, spark: spark, dayLabel: dayLabel, dayFull: dayFull };
 })();
