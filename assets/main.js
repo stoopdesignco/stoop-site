@@ -20,12 +20,10 @@
     entries.forEach(function (e) {
       if (!e.isIntersecting) return;
       e.target.classList.add('in-view');
-      if (e.target.id === 'dash') startDash();
       io.unobserve(e.target);
     });
   }, { threshold: 0.15 }) : null;
   $$('.reveal').forEach(function (el) { io ? io.observe(el) : el.classList.add('in-view'); });
-  if (!io) startDash();
 
   /* carousel: progress bar + drag to scroll */
   var car = $('#carTrack'), bar = $('#carBar');
@@ -72,42 +70,18 @@
   dlg.addEventListener('click', function (e) { if (e.target === dlg) closeDlg(); });
   dlg.addEventListener('close', function () { if (!dlg.open) $('#dlgBody').innerHTML = ''; });
 
-  /* dashboard */
-  $$('.tab').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      $$('.tab').forEach(function (t) { t.classList.remove('on'); t.setAttribute('aria-selected', 'false'); });
-      $$('.panel').forEach(function (p) { p.classList.remove('on'); });
-      tab.classList.add('on'); tab.setAttribute('aria-selected', 'true');
-      $('#p-' + tab.dataset.panel).classList.add('on');
-    });
-  });
-  var dashStarted = false;
-  function startDash() {
-    if (dashStarted) return; dashStarted = true;
-    $$('[data-count]').forEach(function (el) {
-      var end = +el.dataset.count, t0 = null, dur = reduce ? 0 : 1400;
-      function f(ts) { if (!t0) t0 = ts; var p = dur ? Math.min((ts - t0) / dur, 1) : 1; el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))).toLocaleString('en-US'); if (p < 1) requestAnimationFrame(f); }
-      requestAnimationFrame(f);
-    });
-    var EV = [
-      ['cal', 'New booking', 'Sat 10:00 AM'], ['phone', 'New call', 'from Google Maps'], ['star', '5-star review', 'from Dana M.'],
-      ['doc', 'Quote request', 'Custom cake'], ['cal', 'New booking', 'Fri 2:30 PM'], ['gift', 'Gift card sold', '$50'], ['bag', 'Online order', '$54 · paid'], ['chat', 'New chat', '“Do you deliver?”'], ['phone', 'Tap-to-call', 'from homepage']
-    ];
-    var IC = {
-      cal: '<path d="M7 3v3M17 3v3M4 8h16M5 5h14v15H5z"/>', phone: '<path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2"/>',
-      star: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.6 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>', doc: '<path d="M6 3h9l4 4v14H6zM9 12h7M9 16h7"/>', bag: '<path d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2"/>', chat: '<path d="M4 5h16v11H9l-5 4z"/>', gift: '<path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7s-2-4-4-3 0 3 4 3c4 0 6-2 4-3s-4 3-4 3"/>'
+  /* dashboard: the real app, loaded when the section comes near */
+  var demo = $('#dashDemo');
+  if (demo) {
+    var fitDemo = function () {
+      var scr = demo.parentNode, s = scr.clientWidth / 390;
+      demo.style.transform = 'scale(' + s + ')';
+      demo.style.height = (scr.clientHeight / s) + 'px';
     };
-    var feed = $('#feed'), k = 0, mins = [1, 3, 6, 9, 14];
-    function add(fresh) {
-      var e = EV[k % EV.length]; k++;
-      var li2 = document.createElement('li');
-      li2.innerHTML = '<span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C83D0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[e[0]] + '</svg></span><span><b>' + e[1] + '</b> · ' + e[2] + '</span><small>' + (fresh ? 'just now' : mins[Math.min(feed.children.length, 4)] + ' min ago') + '</small>';
-      if (fresh) { $$('small', feed).forEach(function (s, i) { s.textContent = mins[Math.min(i, 4)] + ' min ago'; }); feed.insertBefore(li2, feed.firstChild); }
-      else feed.appendChild(li2);
-      while (feed.children.length > 5) feed.removeChild(feed.lastChild);
-    }
-    for (var i = 0; i < 4; i++) add(false);
-    if (!reduce) setInterval(function () { add(true); }, 3600);
+    fitDemo(); window.addEventListener('resize', fitDemo);
+    var loadDemo = function () { if (demo.src) return; demo.src = demo.dataset.src; demo.addEventListener('load', function () { $('#dashLoad').classList.add('gone'); }); };
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (es, o) { if (es[0].isIntersecting) { loadDemo(); o.disconnect(); } }, { rootMargin: '400px 0px' }).observe(demo);
+    else loadDemo();
   }
 
   /* compare */

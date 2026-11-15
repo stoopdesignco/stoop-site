@@ -531,3 +531,5 @@ a.card.roi{color:#fff}
   .bk-t{min-width:56px}
   .bk .pill{display:none}
 }
+/* homepage demo (app/?embed=1) */
+body.embed #signOut,body.embed #so2{display:none!important}

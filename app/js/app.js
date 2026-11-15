@@ -68,6 +68,11 @@
 
   /* ---------- router ---------- */
   function route() {
+    if (API.embed()) {
+      document.body.classList.add('embed');
+      if (!API.user()) API.signIn({ role: 'client', client_id: 'c_juniper', name: 'Maya Chen' });
+      if (/^#\/?(signin)?$/.test(location.hash)) location.hash = '#/overview';
+    }
     var u = API.user(), h = location.hash.replace(/^#\/?/, '') || '', parts = h.split('/');
     if (!u || parts[0] === 'signin') return signIn();
     U.closeDrawer();

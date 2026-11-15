@@ -99,7 +99,8 @@
   load();
 
   var user = null;
-  try { user = JSON.parse(sessionStorage.getItem('stoop-user') || 'null'); } catch (e) {}
+  var EMBED = /[?&]embed=/.test(location.search); // homepage demo: never touches the real session
+  if (!EMBED) { try { user = JSON.parse(sessionStorage.getItem('stoop-user') || 'null'); } catch (e) {} }
   function ok(v) { return Promise.resolve(JSON.parse(JSON.stringify(v))); }
   function isAdmin() { return user && user.role === 'admin'; }
   function mine(clientId) { return user && (isAdmin() || user.client_id === clientId); }
@@ -199,7 +200,8 @@
   window.API = {
     /* auth (Supabase Auth magic link later) */
     user: function () { return user; },
-    signIn: function (u) { user = u; try { sessionStorage.setItem('stoop-user', JSON.stringify(u)); } catch (e) {} return ok(u); },
+    signIn: function (u) { user = u; if (!EMBED) { try { sessionStorage.setItem('stoop-user', JSON.stringify(u)); } catch (e) {} } return ok(u); },
+    embed: function () { return EMBED; },
     signOut: function () { user = null; try { sessionStorage.removeItem('stoop-user'); } catch (e) {} return ok(true); },
     reset: function () { db = seed(); save(); return ok(true); },
 
