@@ -74,7 +74,8 @@
   var demo = $('#dashDemo');
   if (demo) {
     var fitDemo = function () {
-      var scr = demo.parentNode, s = scr.clientWidth / 390;
+      var scr = demo.parentNode, lw = matchMedia('(min-width: 901px)').matches ? 1200 : 390, s = scr.clientWidth / lw;
+      demo.style.width = lw + 'px';
       demo.style.transform = 'scale(' + s + ')';
       demo.style.height = (scr.clientHeight / s) + 'px';
     };
@@ -84,23 +85,66 @@
     else loadDemo();
   }
 
-  /* compare */
-  var years = $('#years');
-  function cmp() {
-    var y = +years.value;
-    var h = +$('#hrs').value, rate = 89;
-    var a = 6500 + (100 + h * rate) * 12 * y, s = 199 * 12 * y, max = 6500 + (100 + 6 * rate) * 12 * 5;
-    $('#yearsOut').textContent = y + (y === 1 ? ' year' : ' years');
-    $('#hrsOut').textContent = h + (h === 1 ? ' hr/month' : ' hrs/month');
-    $('#vAgency').textContent = money(a); $('#vStoop').textContent = money(s);
-    $('#bAgency').style.width = (a / max * 100) + '%'; $('#bStoop').style.width = Math.max(s / max * 100, 2) + '%';
-    var d = a - s;
-    $('#vSave').textContent = money(Math.abs(d));
-    $('#save').classList.toggle('neg', d < 0);
-    $('#save').firstElementChild.textContent = d >= 0 ? 'You keep' : 'Agency is cheaper by';
-    $('#saveNote').textContent = d >= 0 ? 'with STOOP over ' + $('#yearsOut').textContent + ', plus a dashboard and tools' : 'at this setting';
+  /* to your doorstep: each card plays its moment, then the link to the next card fills */
+  var jr = $('#journey');
+  if (jr) {
+    var tiles = [].slice.call(jr.querySelectorAll('.jr')), links = [].slice.call(jr.querySelectorAll('.jr-link'));
+    var typeEl = jr.querySelector('.sf-type'), word = typeEl.dataset.text, timers = [], running = false;
+    var later = function (fn, ms) { timers.push(setTimeout(fn, ms)); };
+    var reset = function () {
+      tiles.forEach(function (t) { t.classList.remove('lit', 'play', 'done'); });
+      links.forEach(function (l) { l.classList.add('snap'); l.classList.remove('go'); void l.offsetWidth; l.classList.remove('snap'); });
+      typeEl.textContent = '';
+    };
+    var arrive = function (i) {
+      tiles.forEach(function (t, j) { t.classList.toggle('lit', j === i); if (j < i) t.classList.add('done'); });
+      tiles[i].classList.add('play');
+      if (i === 0) for (var c = 1; c <= word.length; c++) (function (n) { later(function () { typeEl.textContent = word.slice(0, n); }, 150 + n * 55); })(c);
+    };
+    var STEP = 2300;
+    var run = function () {
+      if (!running) return; reset();
+      later(function () { arrive(0); }, 250);
+      [1, 2, 3].forEach(function (i) {
+        later(function () { links[i - 1].classList.add('go'); }, 250 + i * STEP - 750);
+        later(function () { arrive(i); }, 250 + i * STEP);
+      });
+      later(function () { tiles[3].classList.add('done'); tiles[3].classList.remove('lit'); }, 250 + 3 * STEP + 2400);
+      later(run, 250 + 3 * STEP + 3600);
+    };
+    var stop = function () { running = false; timers.forEach(clearTimeout); timers = []; };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) {
+      jr.classList.add('static'); typeEl.textContent = word; tiles.forEach(function (t) { t.classList.add('play'); }); links.forEach(function (l) { l.classList.add('go'); });
+    } else new IntersectionObserver(function (es) { if (es[0].isIntersecting) { if (!running) { running = true; run(); } } else stop(); }, { threshold: .3 }).observe(jr);
   }
-  years.addEventListener('input', cmp); $('#hrs').addEventListener('input', cmp); cmp();
+
+  /* compare: a story that builds once when it comes into view */
+  var story = $('#story');
+  if (story) {
+    var steps = story.querySelectorAll('.st-steps li'), segs = ['.sg1', '.sg2', '.sg3', '.sgS'];
+    var tot = function (el, to, ms) {
+      var s0 = performance.now(), from = +(el.dataset.v || 0); el.dataset.v = to;
+      (function t(n) { var p = Math.min(1, (n - s0) / ms); el.textContent = money(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(t); })(s0);
+    };
+    var play = function () {
+      if (story.classList.contains('played')) return; story.classList.add('played');
+      var A = [6500, 7700, 9836], T = 1250;
+      [0, 1, 2, 3].forEach(function (i) {
+        setTimeout(function () {
+          steps.forEach(function (li, j) { li.classList.toggle('now', j === i); if (j <= i) li.classList.add('on'); });
+          story.querySelector(segs[i]).classList.add('on');
+          if (i < 3) tot($('#stA'), A[i], 900); else tot($('#stS'), 2388, 900);
+        }, 300 + i * T);
+      });
+      setTimeout(function () {
+        steps.forEach(function (li) { li.classList.remove('now'); });
+        story.querySelector('.sgK').classList.add('on'); $('#stSave').classList.add('on'); tot($('#stK'), 7448, 1100);
+      }, 300 + 4 * T);
+    };
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) { story.classList.add('instant'); play(); }
+    else new IntersectionObserver(function (es, o) { if (es[0].isIntersecting) { play(); o.disconnect(); } }, { threshold: .35 }).observe(story);
+  }
+
   var bf = $('#buyFaq');
   if (bf) bf.addEventListener('click', function () { var i = $$('.faq-q').findIndex(function (q) { return /buy out/i.test(q.textContent); }); if (i > -1) setTimeout(function () { $$('.faq-q')[i].click(); }, 400); });
 

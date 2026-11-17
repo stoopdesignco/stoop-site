@@ -317,6 +317,9 @@
   }
   function infoHTML(t, opts) {
     opts = opts || {};
+    if (opts.simple) return '<div class="dlg-sec"><p class="lede" style="font-size:16px;margin:0">' + t.lede + '</p></div>' +
+      '<div class="dlg-sec"><ul class="dlg-list">' + t.does.slice(0, 3).map(function (x) { return '<li>' + CK + x + '</li>'; }).join('') + '</ul></div>' +
+      '<p class="ld-replaces"><span>Replaces</span>' + t.apps.join(' · ') + '</p>';
     return '<div class="dlg-sec">' + (opts.noTitle ? '' : '<span class="eyebrow">STOOP TOOL</span><h2 id="dlgTitle">' + t.title + '</h2>') + '<p class="lede" style="font-size:16px;margin:0">' + t.lede + '</p></div>' +
       '<div class="dlg-sec"><span class="dlg-sub">WHAT IT DOES</span><ul class="dlg-list">' + t.does.map(function (x) { return '<li>' + CK + x + '</li>'; }).join('') + '</ul></div>' +
       (opts.chips ? '<div class="dlg-sec"><span class="dlg-sub">NO MORE</span><div class="gone-chips">' + t.replaces.map(function (x) { return '<s>' + x + '</s>'; }).join('') + '</div></div>'

@@ -40,7 +40,7 @@
       best: ['Outdoor tours', 'Fishing and rafting', 'Bike and ski shops', 'Golf courses'], live: 'Live Oak Creek weather on the homepage',
       flow: [['Pull', 'Live weather or conditions update on their own'], ['Nudge', 'A “great day to go” note when it is'], ['Book', 'Right next to your booking button']] }
   };
-  var CATS = [['all', 'All tools'], ['book', 'Get booked'], ['sell', 'Sell online'], ['talk', 'Talk'], ['trust', 'Build trust']];
+  var CATS = [['all', 'All'], ['book', 'Book'], ['sell', 'Sell'], ['talk', 'Talk'], ['trust', 'Trust']];
   var CATNAME = { book: 'Get booked', sell: 'Sell online', talk: 'Talk', trust: 'Build trust' };
   var ORDER = ['booking', 'quote', 'store', 'gift', 'chat', 'text', 'reviews', 'conditions'];
   var cat = 'all', cur = null;
@@ -76,10 +76,8 @@
     $('#libDetail').innerHTML =
       '<div class="ld-head"><span class="lib-ic big">' + L.icon + '</span><div><span class="ld-cat">' + CATNAME[L.cat] + '</span><h2>' + t.title + '</h2></div><span class="ld-n mono">' + String(i + 1).padStart(2, '0') + ' / 0' + ORDER.length + '</span></div>' +
       '<div class="ld-grid"><div class="ld-demo"><span class="ld-label">TRY IT LIVE · SAMPLE CLIENT SITE</span><div id="libDemo" class="ld-demo-in"></div></div>' +
-      '<div class="ld-info dlg-info">' + ST.info(t, { noTitle: true, chips: true }) + '</div></div>' +
-      '<div class="ld-flow"><span class="dlg-sub">HOW IT WORKS FOR YOUR CUSTOMERS</span><ol>' + L.flow.map(function (f, j) { return '<li><span class="ld-step">' + (j + 1) + '</span><b>' + f[0] + '</b><span>' + f[1] + '</span></li>'; }).join('') + '</ol></div>' +
-      '<div class="ld-row"><div class="ld-card"><span class="dlg-sub">GREAT FOR</span><div class="apps-line">' + L.best.map(function (b) { return '<span>' + b + '</span>'; }).join('') + '</div></div>' +
-      '<div class="ld-card ld-plan"><span class="dlg-sub">ON YOUR PLAN</span><p>' + planLine(k) + '</p><a href="index.html#plans">Compare plans ' + ST.ARW + '</a></div></div>' +
+      '<div class="ld-info dlg-info">' + ST.info(t, { noTitle: true, simple: true }) + '</div></div>' +
+      '<div class="ld-flow"><span class="dlg-sub">FOR YOUR CUSTOMERS</span><ol>' + L.flow.map(function (f, j) { return '<li><span class="ld-step">' + (j + 1) + '</span><b>' + f[0] + '</b><span>' + f[1] + '</span></li>'; }).join('') + '</ol></div>' +
       (L.live ? '<a class="ld-live" href="https://tailwaterflyco.com" target="_blank" rel="noopener"><span class="ld-live-dot"></span><span><span class="dlg-sub">IN USE NOW</span><b>Tailwater Fly Co.</b><small>' + L.live + '</small></span><em>Visit site ↗</em></a>' : '') +
       '<div class="ld-nav"><button class="ld-pn" data-k="' + prev + '">← ' + T[prev].title + '</button><a href="get-started.html" class="btn btn-primary">' + t.cta + ' ' + ST.ARW + '</a><button class="ld-pn" data-k="' + next + '">' + T[next].title + ' →</button></div>';
     ST.mount($('#libDemo'), k, { cta: false });
