@@ -68,9 +68,18 @@
 
   /* ---------- router ---------- */
   function route() {
+    function payFullWords() {
+      if (window.__payFull) return; window.__payFull = 1;
+      // this business is paid in full online: say "paid", not "deposit"
+      var R = [[/\bin deposits\b/g, 'paid online'], [/\bdeposits\b/g, 'paid'], [/Collect deposit/g, 'Collect payment'], [/the deposit refund/g, 'the refund'], [/\bDeposit\b/g, 'Paid'], [/\bdeposit\b/g, 'paid']];
+      var fix = function (root) { var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n; while ((n = w.nextNode())) { var t = n.nodeValue; if (!/eposit/.test(t)) continue; R.forEach(function (r) { t = t.replace(r[0], r[1]); }); n.nodeValue = t; } };
+      fix(document.body); new MutationObserver(function (ms) { ms.forEach(function (m) { m.addedNodes.forEach(function (x) { if (x.nodeType === 1) fix(x); else if (x.nodeType === 3 && /eposit/.test(x.nodeValue)) fix(x.parentNode); }); }); }).observe(document.body, { childList: true, subtree: true });
+    }
     if (API.embed()) {
       document.body.classList.add('embed');
-      if (!API.user()) API.signIn({ role: 'client', client_id: 'c_juniper', name: 'Maya Chen' });
+      var DEMOS = { transmutation: ['c_transmutation', 'Kelsey'] }, dm = DEMOS[API.demo()] || ['c_juniper', 'Maya Chen'];
+      if (!API.user()) API.signIn({ role: 'client', client_id: dm[0], name: dm[1] });
+      if (dm[0] === 'c_transmutation') payFullWords();
       if (/^#\/?(signin)?$/.test(location.hash)) location.hash = '#/overview';
     }
     var u = API.user(), h = location.hash.replace(/^#\/?/, '') || '', parts = h.split('/');

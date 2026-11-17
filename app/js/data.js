@@ -20,6 +20,7 @@
       { id: 'c_juniper', name: 'Juniper Massage', owner: 'Maya Chen', email: 'maya@junipermassage.com', phone: '(555) 010-1002', plan: 'Essentials', mrr: 199, status: 'active', started: ago(95 * D), termEnds: ahead(270 * D), tools: ['booking'], domain: 'junipermassage.com' },
       { id: 'c_bright', name: 'Brightside Cleaning', owner: 'Taylor Brooks', email: 'taylor@brightsideclean.com', phone: '(555) 010-1003', plan: 'Growth', mrr: 349, status: 'active', started: ago(60 * D), termEnds: ahead(305 * D), tools: ['quote', 'reviews', 'chat'], domain: 'brightsideclean.com' },
       { id: 'c_redrock', name: 'Red Rock Outfitters', owner: 'Sam Patel', email: 'sam@redrockoutfitters.com', phone: '(555) 010-1004', plan: 'Growth', mrr: 349, status: 'past_due', started: ago(320 * D), termEnds: ahead(45 * D), tools: ['booking', 'conditions', 'gift'], domain: 'redrockoutfitters.com' },
+      { id: 'c_transmutation', name: 'Transmutation Station', owner: 'Kelsey', email: 'hello@transmutationstation.com', phone: '(928) 555-0142', plan: 'Growth', mrr: 349, status: 'active', started: ago(21 * D), termEnds: ahead(344 * D), tools: ['booking', 'store', 'reviews'], domain: 'transmutationstation.com', city: 'Flagstaff, AZ', payFull: true },
       { id: 'c_bloom', name: 'Desert Bloom Candles', owner: 'Dana Morales', email: 'dana@desertbloomcandles.com', phone: '(555) 010-1005', plan: 'Essentials', mrr: 199, status: 'building', started: ago(6 * D), termEnds: ahead(359 * D), tools: ['store'], domain: 'desertbloomcandles.com' }
     ];
     var sites = {
@@ -27,6 +28,7 @@
       c_juniper: { uptime: 99.98, speed: 96, ssl: 51, renew: 140, deploy: ago(9 * D) },
       c_bright: { uptime: 100, speed: 97, ssl: 12, renew: 300, deploy: ago(1 * D) },
       c_redrock: { uptime: 99.4, speed: 91, ssl: 88, renew: 18, deploy: ago(30 * D) },
+      c_transmutation: { uptime: 100, speed: 98, ssl: 340, renew: 344, deploy: ago(2 * D) },
       c_bloom: { uptime: null, speed: null, ssl: null, renew: 360, deploy: null }
     };
     var R = [
@@ -34,6 +36,8 @@
       { client_id: 'c_bright', text: 'Add move-out cleaning to the quote tool at $180 base', source: 'dashboard', status: 'progress', created: ago(26 * H), due: ahead(22 * H) },
       { client_id: 'c_redrock', text: 'Swap the homepage photo for the new canyon shot I emailed', source: 'email', status: 'received', created: ago(52 * H), due: ago(4 * H) },
       { client_id: 'c_juniper', text: 'New service: 30-min chair massage, $45', source: 'text', status: 'review', created: ago(30 * H), due: ahead(18 * H) },
+      { client_id: 'c_transmutation', text: 'Add the Glow membership to the homepage banner', source: 'text', status: 'progress', created: ago(5 * H), due: ahead(43 * H) },
+      { client_id: 'c_transmutation', text: 'New service: lash lift + tint, $95', source: 'dashboard', status: 'live', created: ago(4 * D), due: ago(2 * D), done: ago(3 * D) },
       { client_id: 'c_bakery', text: 'Holiday pie pre-orders page', source: 'dashboard', status: 'progress', created: ago(20 * H), due: ahead(28 * H) },
       { client_id: 'c_bright', text: 'Fix typo on About page', source: 'text', status: 'live', created: ago(4 * D), due: ago(2 * D), done: ago(3 * D) },
       { client_id: 'c_juniper', text: 'Update gift policy wording', source: 'text', status: 'live', created: ago(6 * D), due: ago(4 * D), done: ago(5 * D) }
@@ -43,6 +47,7 @@
       ['c_juniper', 'client', 'Can we add a 30-min chair massage for $45?', 30 * H], ['c_juniper', 'stoop', 'Yes! It’s ready for your review in the dashboard.', 6 * H],
       ['c_redrock', 'client', 'Just emailed a new canyon photo for the homepage', 52 * H],
       ['c_bright', 'client', 'Thanks for fixing the typo!', 3 * D], ['c_bright', 'stoop', 'Anytime, Taylor.', 3 * D - H],
+      ['c_transmutation', 'client', 'Can we feature the Glow membership on the homepage?', 5 * H], ['c_transmutation', 'stoop', 'Yes! Banner draft will be in your dashboard tomorrow.', 4.5 * H],
       ['c_bloom', 'stoop', 'Your first draft is coming Thursday. Still need product photos when you can!', 1 * D]
     ].map(function (m) { return { id: id('m'), client_id: m[0], from: m[1], body: m[2], at: ago(m[3]) }; });
     var L = [
@@ -52,6 +57,8 @@
       ['c_bright', 'Riley Adams', 'riley.a@email.com', '(555) 010-7782', 'Tap-to-call', '2 min call from Google Maps', 1 * D, 'won'],
       ['c_juniper', 'Morgan Lee', 'morgan@email.com', '(555) 010-1124', 'Contact form', 'Do you take HSA cards?', 2 * D, 'new'],
       ['c_redrock', 'Jordan Kim', 'jordan.k@email.com', '(555) 010-5530', 'Contact form', 'Private group of 8 in March?', 3 * D, 'contacted'],
+      ['c_transmutation', 'Mia Torres', 'mia.t@email.com', '(928) 555-0181', 'Contact form', 'Bridal party facials for 5 in June?', 3 * H, 'new'],
+      ['c_transmutation', 'Jess Park', 'jess.p@email.com', '(928) 555-0190', 'Contact form', 'Do memberships roll over?', 1 * D, 'contacted'],
       ['c_bloom', 'Alex Reed', 'alex.r@email.com', '(555) 010-9012', 'Contact form', 'Wholesale for our shop?', 5 * H, 'new']
     ].map(function (l) { return { id: id('l'), client_id: l[0], name: l[1], email: l[2], phone: l[3], source: l[4], detail: l[5], at: ago(l[6]), status: l[7] }; });
     var B = [
@@ -64,6 +71,10 @@
     var O = [
       ['c_bakery', 'Dana Morales', 'dana.m@email.com', 'Sourdough loaf ×2, Croissant box', 38, 3 * H, 'paid'],
       ['c_bakery', 'Kim Tran', 'kim.t@email.com', 'Pumpkin loaf', 14, 1 * D, 'fulfilled'],
+      ['c_transmutation', 'Rachel Lee', 'rachel.l@email.com', 'Glow membership · monthly', 129, 2 * H, 'paid'],
+      ['c_transmutation', 'Nina Brooks', 'nina.b@email.com', 'Smooth membership · monthly', 79, 1 * D, 'paid'],
+      ['c_transmutation', 'Olivia Grant', 'olivia.g@email.com', 'Hydrating serum + SPF 40', 86, 2 * D, 'fulfilled'],
+      ['c_transmutation', 'Sara Kim', 'sara.k@email.com', '$100 gift card', 100, 3 * D, 'fulfilled'],
       ['c_redrock', 'Jordan Kim', 'jordan.k@email.com', '$100 gift card', 100, 1 * D, 'paid'],
       ['c_redrock', 'Pat Moore', 'pat.m@email.com', '$50 gift card', 50, 4 * D, 'fulfilled']
     ].map(function (o) { return { id: id('o'), client_id: o[0], customer: o[1], email: o[2], items: o[3], total: o[4], at: ago(o[5]), status: o[6] }; });
@@ -90,16 +101,17 @@
     ];
     var INV = [];
     C.forEach(function (c) { for (var i = 0; i < 3; i++) INV.push({ id: id('in'), client_id: c.id, amount: c.mrr, at: ago((i * 30 + 5) * D), status: (c.status === 'past_due' && i === 0) ? 'failed' : 'paid' }); });
-    return { clients: C, sites: sites, requests: R, messages: M, leads: L, bookings: B, orders: O, chats: CH, pipeline: P, builds: BUILD, grants: G, accessLog: LOG, invoices: INV, v: 1 };
+    return { clients: C, sites: sites, requests: R, messages: M, leads: L, bookings: B, orders: O, chats: CH, pipeline: P, builds: BUILD, grants: G, accessLog: LOG, invoices: INV, v: 2 };
   }
 
   var db;
-  function load() { try { var s = localStorage.getItem(KEY); if (s) db = JSON.parse(s); } catch (e) {} if (!db || db.v !== 1) db = seed(); }
+  function load() { try { var s = localStorage.getItem(KEY); if (s) db = JSON.parse(s); } catch (e) {} if (!db || db.v !== 2) db = seed(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
   load();
 
   var user = null;
-  var EMBED = /[?&]embed=/.test(location.search); // homepage demo: never touches the real session
+  var DEMO = (location.search.match(/[?&]demo=([a-z]+)/) || [])[1] || '';
+  var EMBED = /[?&]embed=/.test(location.search) || !!DEMO; // homepage demo: never touches the real session
   if (!EMBED) { try { user = JSON.parse(sessionStorage.getItem('stoop-user') || 'null'); } catch (e) {} }
   function ok(v) { return Promise.resolve(JSON.parse(JSON.stringify(v))); }
   function isAdmin() { return user && user.role === 'admin'; }
@@ -152,6 +164,7 @@
   function rng(seed) { var h = 0; for (var i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0; return function () { h = (h * 1103515245 + 12345) >>> 0; return (h >>> 8) / 16777216; }; }
   var SERVICES = {
     c_juniper: [['60-min massage', 60, 95, 25], ['90-min massage', 90, 135, 25], ['Couples session', 90, 210, 50], ['30-min chair massage', 30, 45, 0]],
+    c_transmutation: [['Signature facial', 60, 120, 120], ['Express glow facial', 30, 75, 75], ['Dermaplaning', 45, 95, 95], ['Lash lift + tint', 60, 95, 95], ['Brow wax + shape', 15, 25, 25], ['Full face wax', 30, 55, 55]],
     c_redrock: [['Sunrise hike', 120, 80, 40], ['Half-day canyon tour', 240, 150, 50], ['Full-day canyon tour', 480, 280, 100]]
   };
   function services(cid) { return (SERVICES[cid] || [['Appointment', 60, 100, 25]]).map(function (s) { return { name: s[0], mins: s[1], price: s[2], deposit: s[3] }; }); }
@@ -202,6 +215,7 @@
     user: function () { return user; },
     signIn: function (u) { user = u; if (!EMBED) { try { sessionStorage.setItem('stoop-user', JSON.stringify(u)); } catch (e) {} } return ok(u); },
     embed: function () { return EMBED; },
+    demo: function () { return DEMO; },
     signOut: function () { user = null; try { sessionStorage.removeItem('stoop-user'); } catch (e) {} return ok(true); },
     reset: function () { db = seed(); save(); return ok(true); },
 
